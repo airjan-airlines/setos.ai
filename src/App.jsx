@@ -19,7 +19,7 @@ export default function App() {
       const data = await res.json();
       setResults(data);
     } catch (err) {
-      setError("Placeholder API request failed. Try again.");
+      setError("placeholder api request failed");
     } finally {
       setLoading(false);
     }
@@ -89,24 +89,24 @@ export default function App() {
 
         <div className="grid md:grid-cols-3 gap-5 mt-6">
           <InfoCard
-            icon="❓"
+            icon="add an icon here"
             title="Ask Questions"
             body="Input your questions or topics of interest in the search bar."
           />
           <InfoCard
-            icon="📚"
+            icon="add an icon here"
             title="Explore Papers"
             body="Browse our extensive library of research papers across various scientific disciplines."
           />
           <InfoCard
-            icon="💬"
+            icon="add an icon here"
             title="Learn and Share"
             body="Gain insights from scientific papers and share your knowledge with others."
           />
         </div>
       </section>
 
-      {/* Placeholder results */}
+      {/* placeholder results */}
       <section className="max-w-6xl mx-auto px-4 mt-10 mb-20">
         {error && (
           <div className="bg-red-500/10 border border-red-500/30 text-red-200 p-4 rounded-xl">{error}</div>
@@ -130,7 +130,7 @@ export default function App() {
         )}
       </section>
 
-      {/* Footer */}
+      {/* footer */}
       <footer className="border-t border-white/10 py-10 mt-10">
         <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center md:items-start justify-between gap-6 text-sm text-white/60">
           <div className="flex flex-col items-center md:items-start gap-2">
