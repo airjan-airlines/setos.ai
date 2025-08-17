@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Paper Rank</title>
+    <title>Dashboard - setosa</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -153,7 +153,8 @@
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
             z-index: 1000;
             top: 100%;
-            left: 0;
+            left: 50%;
+            transform: translateX(-50%);
             margin-top: 0.5rem;
         }
 
@@ -317,7 +318,7 @@
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 20px;
-            padding: 1.5rem;
+            padding: 1rem;
             text-align: center;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             position: relative;
@@ -341,8 +342,8 @@
         }
 
         .streak-icon {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
+            font-size: 2rem;
+            margin-bottom: 0.25rem;
             animation: flame 2s ease-in-out infinite;
         }
 
@@ -352,7 +353,7 @@
         }
 
         .streak-number {
-            font-size: 3rem;
+            font-size: 2.5rem;
             font-weight: 800;
             color: white;
             margin-bottom: 0.25rem;
@@ -370,14 +371,14 @@
         .streak-subtitle {
             font-size: 0.9rem;
             color: rgba(255, 255, 255, 0.9);
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
         }
 
         .streak-progress {
             background: rgba(255, 255, 255, 0.2);
             border-radius: 10px;
             height: 4px;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
             overflow: hidden;
         }
 
@@ -410,7 +411,6 @@
 
         .streak-btn:hover {
             background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
@@ -422,7 +422,6 @@
 
         .streak-btn.primary:hover {
             background: white;
-            transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
@@ -432,7 +431,7 @@
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 20px;
-            padding: 1.5rem;
+            padding: 1rem;
             text-align: center;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             position: relative;
@@ -456,8 +455,8 @@
         }
 
         .paper-icon {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
+            font-size: 2rem;
+            margin-bottom: 0.25rem;
             animation: paperFloat 3s ease-in-out infinite;
         }
 
@@ -484,7 +483,7 @@
             font-size: 0.85rem;
             color: rgba(255, 255, 255, 0.8);
             line-height: 1.4;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
             text-align: left;
         }
 
@@ -509,7 +508,6 @@
 
         .paper-btn:hover {
             background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
@@ -521,7 +519,6 @@
 
         .paper-btn.primary:hover {
             background: white;
-            transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
@@ -1039,7 +1036,7 @@
         <div class="nav-container">
             <div class="logo">
                 <div class="logo-icon">🧭</div>
-                <span>Paper Rank</span>
+                <span>setosa</span>
             </div>
                             <div class="nav-links">
                     <a href="index.html" class="nav-link">Home</a>
@@ -1066,7 +1063,6 @@
                 <div class="user-avatar" id="userAvatar">U</div>
                 <div class="user-details">
                     <h3 id="userName">User</h3>
-                    <p id="userEmail">user@example.com</p>
                 </div>
             </div>
 
@@ -1240,7 +1236,7 @@
                     </div>
                     <span style="color: var(--gray); font-size: 0.9rem;">support@paperrank.com</span>
                 </div>
-                <p style="color: var(--gray); font-size: 0.85rem;">Copyright © 2025 Paper Rank. All rights reserved.</p>
+                <p style="color: var(--gray); font-size: 0.85rem;">Copyright © 2025 setosa. All rights reserved.</p>
             </div>
         </div>
     </footer>
@@ -1260,7 +1256,7 @@
             try {
                 const userData = JSON.parse(user);
                 document.getElementById('userName').textContent = `${userData.firstName} ${userData.lastName}`;
-                document.getElementById('userEmail').textContent = userData.email;
+        
                 document.getElementById('userAvatar').textContent = userData.firstName.charAt(0).toUpperCase();
             } catch (error) {
                 console.error('Error parsing user data:', error);

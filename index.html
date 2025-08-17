@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paper Rank</title>
+    <title>setosa</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -71,6 +71,96 @@
         @keyframes float {
             0%, 100% { transform: translate(0, 0) scale(1); }
             50% { transform: translate(50px, -50px) scale(1.1); }
+        }
+
+        /* Graph Animation */
+        .graph-animation {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -2;
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        .graph-node {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #4b5563;
+            border-radius: 50%;
+            animation: nodeFloat 12s ease-in-out infinite;
+            box-shadow: 0 0 4px rgba(75, 85, 99, 0.5);
+        }
+
+        /* Dense network positioning - rotated 90 degrees (swapped top/left) */
+        .graph-node:nth-child(1) { top: 10%; left: 20%; animation-delay: 0s; }
+        .graph-node:nth-child(2) { top: 25%; left: 35%; animation-delay: 0.5s; }
+        .graph-node:nth-child(3) { top: 40%; left: 15%; animation-delay: 1s; }
+        .graph-node:nth-child(4) { top: 55%; left: 45%; animation-delay: 1.5s; }
+        .graph-node:nth-child(5) { top: 70%; left: 25%; animation-delay: 2s; }
+        .graph-node:nth-child(6) { top: 85%; left: 40%; animation-delay: 2.5s; }
+        .graph-node:nth-child(7) { top: 15%; left: 60%; animation-delay: 3s; }
+        .graph-node:nth-child(8) { top: 30%; left: 75%; animation-delay: 3.5s; }
+        .graph-node:nth-child(9) { top: 45%; left: 65%; animation-delay: 4s; }
+        .graph-node:nth-child(10) { top: 60%; left: 80%; animation-delay: 4.5s; }
+        .graph-node:nth-child(11) { top: 75%; left: 60%; animation-delay: 5s; }
+        .graph-node:nth-child(12) { top: 20%; left: 85%; animation-delay: 5.5s; }
+        .graph-node:nth-child(13) { top: 35%; left: 90%; animation-delay: 6s; }
+        .graph-node:nth-child(14) { top: 50%; left: 85%; animation-delay: 6.5s; }
+        .graph-node:nth-child(15) { top: 65%; left: 90%; animation-delay: 7s; }
+        .graph-node:nth-child(16) { top: 80%; left: 75%; animation-delay: 7.5s; }
+        .graph-node:nth-child(17) { top: 5%; left: 50%; animation-delay: 8s; }
+        .graph-node:nth-child(18) { top: 90%; left: 15%; animation-delay: 8.5s; }
+        .graph-node:nth-child(19) { top: 10%; left: 40%; animation-delay: 9s; }
+        .graph-node:nth-child(20) { top: 95%; left: 55%; animation-delay: 9.5s; }
+        .graph-node:nth-child(21) { top: 15%; left: 5%; animation-delay: 10s; }
+        .graph-node:nth-child(22) { top: 45%; left: 8%; animation-delay: 10.5s; }
+        .graph-node:nth-child(23) { top: 75%; left: 3%; animation-delay: 11s; }
+
+
+
+        @keyframes nodeFloat {
+            0%, 100% { 
+                transform: translate(0, 0) scale(1);
+                opacity: 0.6;
+            }
+            25% { 
+                transform: translate(8px, -6px) scale(1.1);
+                opacity: 0.9;
+            }
+            50% { 
+                transform: translate(-4px, 10px) scale(0.9);
+                opacity: 0.8;
+            }
+            75% { 
+                transform: translate(6px, 4px) scale(1.05);
+                opacity: 1;
+            }
+        }
+
+
+
+        /* Initial animation that plays once on page load */
+        .graph-animation.initial {
+            animation: graphEntrance 3s ease-out forwards;
+        }
+
+        @keyframes graphEntrance {
+            0% {
+                opacity: 0;
+                transform: scale(0.3) rotate(-5deg);
+            }
+            50% {
+                opacity: 0.2;
+                transform: scale(1.05) rotate(2deg);
+            }
+            100% {
+                opacity: 0.15;
+                transform: scale(1) rotate(0deg);
+            }
         }
 
         /* Navigation */
@@ -152,7 +242,8 @@
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
             z-index: 1000;
             top: 100%;
-            left: 0;
+            left: 50%;
+            transform: translateX(-50%);
             margin-top: 0.5rem;
         }
 
@@ -237,7 +328,11 @@
             color: white;
             line-height: 1.1;
             letter-spacing: -0.02em;
+            position: relative;
+            display: inline-block;
         }
+
+
 
         .hero .subtitle {
             font-size: 1.25rem;
@@ -631,12 +726,38 @@
 </head>
 <body>
     <div class="bg-animation"></div>
+    <div class="graph-animation" id="graphAnimation">
+        <!-- 20 nodes for a denser network -->
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+    </div>
 
     <nav>
         <div class="nav-container">
             <div class="logo">
                 <div class="logo-icon">🧭</div>
-                <span>Paper Rank</span>
+                <span>setosa</span>
             </div>
                             <div class="nav-links">
                     <a href="index.html" class="nav-link active">Home</a>
@@ -655,7 +776,7 @@
 
     <section class="hero">
         <div class="hero-content">
-            <h1>Entropic</h1>
+            <h1 data-text="setosa">setosa</h1>
             <p class="subtitle">Transform any question into a personalized learning journey through scientific literature. From beginner to expert, one paper at a time.</p>
             
             <div class="search-container">
@@ -835,7 +956,7 @@
                     </div>
                     <span style="color: var(--gray); font-size: 0.9rem;">support@paperrank.com</span>
                 </div>
-                <p style="color: var(--gray); font-size: 0.85rem;">Copyright © 2025 Paper Rank. All rights reserved.</p>
+                <p style="color: var(--gray); font-size: 0.85rem;">Copyright © 2025 setosa. All rights reserved.</p>
             </div>
         </div>
     </footer>
@@ -847,6 +968,23 @@
             
             if (!query) {
                 return;
+            }
+
+            // Check if user is logged in
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            if (!token || !user) {
+                // User is not logged in - check search limit
+                const searchCount = parseInt(localStorage.getItem('searchCount') || '0');
+                
+                if (searchCount >= 2) {
+                    alert('You have reached the search limit for unregistered users. Please create an account to continue searching.');
+                    return;
+                }
+                
+                // Increment search count
+                localStorage.setItem('searchCount', (searchCount + 1).toString());
             }
 
             // Save search to recent searches
@@ -944,6 +1082,17 @@
         // Check authentication on page load
         document.addEventListener('DOMContentLoaded', function() {
             checkAuthAndUpdateNav();
+            
+            // Trigger graph animation on page load
+            const graphAnimation = document.getElementById('graphAnimation');
+            if (graphAnimation) {
+                graphAnimation.classList.add('initial');
+                
+                // Remove the initial class after animation completes
+                setTimeout(() => {
+                    graphAnimation.classList.remove('initial');
+                }, 3000);
+            }
         });
 
     </script>
