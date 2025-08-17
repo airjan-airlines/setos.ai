@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paper Rank</title>
+    <title>Search Results - Paper Rank</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -22,6 +22,7 @@
             --light: #f8fafc;
             --gray: #64748b;
             --success: #10b981;
+            --error: #ef4444;
             --card-bg: rgba(255, 255, 255, 0.05);
         }
 
@@ -198,6 +199,25 @@
             box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
         }
 
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            display: inline-block;
+            letter-spacing: -0.01em;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
         .btn-danger {
             background: #dc2626;
             color: white;
@@ -218,138 +238,12 @@
             box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
         }
 
-        /* Hero Section */
-        .hero {
-            padding: 6rem 2rem 4rem;
-            text-align: center;
-            position: relative;
-        }
-
-        .hero-content {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        .hero h1 {
-            font-size: 4rem;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            color: white;
-            line-height: 1.1;
-            letter-spacing: -0.02em;
-        }
-
-        .hero .subtitle {
-            font-size: 1.25rem;
-            color: white;
-            margin-bottom: 3rem;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Search Section */
-        .search-container {
-            max-width: 700px;
-            margin: 0 auto 4rem;
-        }
-
-        .search-box {
-            position: relative;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 0.5rem;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s;
-        }
-
-        .search-box:hover,
-        .search-box:focus-within {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: var(--primary);
-            box-shadow: 0 0 40px rgba(99, 102, 241, 0.2);
-        }
-
-        .search-input {
-            background: transparent;
-            border: none;
-            color: var(--light);
-            font-size: 1.1rem;
-            padding: 1rem 1.5rem;
-            width: calc(100% - 140px);
-            outline: none;
-        }
-
-        .search-input::placeholder {
-            color: var(--gray);
-        }
-
-        .search-btn {
-            position: absolute;
-            right: 0.5rem;
-            top: 50%;
-            transform: translateY(-50%);
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 15px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .search-btn:hover {
-            transform: translateY(-50%) scale(1.05);
-            box-shadow: 0 5px 20px rgba(99, 102, 241, 0.4);
-        }
-
-        .search-suggestions {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1.5rem;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .suggestion-chip {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            color: var(--gray);
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .suggestion-chip:hover {
-            background: rgba(99, 102, 241, 0.2);
-            border-color: var(--primary);
-            color: var(--light);
-            transform: translateY(-2px);
-        }
-
         /* Results Section */
         .results-section {
             max-width: 1200px;
             margin: 0 auto;
             padding: 2rem;
-            display: none;
             animation: fadeIn 0.5s ease-out;
-        }
-
-        .results-section.active {
-            display: block;
         }
 
         @keyframes fadeIn {
@@ -358,8 +252,9 @@
         }
 
         .roadmap-header {
-            text-align: center;
+            text-align: left;
             margin-bottom: 3rem;
+            padding-left: 3rem;
         }
 
         .roadmap-title {
@@ -490,8 +385,7 @@
 
         .meta-item {
             display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            flex-direction: column;
             color: var(--gray);
             font-size: 0.9rem;
         }
@@ -521,117 +415,86 @@
             transform: translateY(-2px);
         }
 
-        /* Features Section */
-        .features {
-            padding: 4rem 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
+        /* Return to Search and Star Button */
+        .search-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 0 3rem;
         }
 
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
+        .return-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .feature-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 2rem;
-            backdrop-filter: blur(10px);
+        .return-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .star-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--gray);
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+        }
+
+        .star-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .star-btn .star-icon {
+            font-size: 1.2rem;
             transition: all 0.3s;
         }
 
-        .feature-card:hover {
-            background: rgba(255, 255, 255, 0.08);
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.2);
+        .star-btn.favorited {
+            background: rgba(251, 191, 36, 0.1);
+            color: #fbbf24;
+            border-color: #fbbf24;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
         }
 
-        .feature-icon {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
+        .star-btn.favorited:hover {
+            background: rgba(251, 191, 36, 0.2);
+            box-shadow: 0 0 30px rgba(251, 191, 36, 0.5);
         }
 
-        .feature-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: var(--light);
-            letter-spacing: -0.01em;
+        .star-btn.favorited .star-icon {
+            filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.8));
         }
 
-        .feature-description {
-            color: var(--gray);
-            line-height: 1.6;
-        }
 
-        /* Loading State */
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 2rem;
-        }
 
-        .loading.active {
-            display: block;
-        }
 
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 2.5rem;
-            }
-
-            .nav-links {
-                display: none;
-            }
-
-            .search-input {
-                width: calc(100% - 100px);
-                font-size: 1rem;
-            }
-
-            .search-btn {
-                padding: 0.6rem 1rem;
-            }
-
-            .roadmap-container {
-                padding-left: 2rem;
-            }
-
-            .paper-node {
-                left: -1rem;
-            }
-        }
     </style>
 </head>
 <body>
     <div class="bg-animation"></div>
 
+    <!-- Navigation -->
     <nav>
         <div class="nav-container">
             <div class="logo">
@@ -639,7 +502,7 @@
                 <span>Paper Rank</span>
             </div>
             <div class="nav-links">
-                <a href="index.html" class="nav-link active">Home</a>
+                <a href="index.html" class="nav-link">Home</a>
                 <div class="nav-dropdown" id="aboutDropdown">
                     <a href="#" class="nav-link" onclick="toggleDropdown(event)">About</a>
                     <div class="dropdown-content">
@@ -653,157 +516,29 @@
         </div>
     </nav>
 
-    <section class="hero">
-        <div class="hero-content">
-            <h1>Entropic</h1>
-            <p class="subtitle">Transform any question into a personalized learning journey through scientific literature. From beginner to expert, one paper at a time.</p>
-            
-            <div class="search-container">
-                <div class="search-box">
-                    <input type="text" class="search-input" id="searchInput" placeholder="Ask anything: 'Do gut microbes affect depression?'">
-                    <button class="search-btn" onclick="performSearch()">Explore →</button>
-                </div>
-                <div class="search-suggestions">
-                    <div class="suggestion-chip" onclick="setSearch('suggestion 1?')">suggestion 1</div>
-                    <div class="suggestion-chip" onclick="setSearch('suggestion 2')">suggestion 2</div>
-                    <div class="suggestion-chip" onclick="setSearch('suggestion 3')">suggestion 3</div>
-                    <div class="suggestion-chip" onclick="setSearch('suggestion 4')">suggestion 4</div>
-                </div>
-            </div>
+    <!-- Search Results -->
+    <section class="results-section">
+        <div class="search-actions">
+            <a href="index.html" class="return-btn">
+                ← Return to Search
+            </a>
+            <button class="star-btn" id="starBtn" onclick="toggleFavorite()">
+                <span class="star-icon">☆</span> Save Topic
+            </button>
         </div>
-    </section>
-
-    <div class="loading" id="loadingState">
-        <div class="spinner"></div>
-        <p style="color: var(--gray);">Building your personalized learning roadmap...</p>
-    </div>
-
-    <section class="results-section" id="resultsSection">
+        
         <div class="roadmap-header">
-            <h2 class="roadmap-title">Your Learning Roadmap</h2>
-            <p class="roadmap-subtitle">5 papers selected • Estimated time: 2-3 hours</p>
+            <h2 class="roadmap-title" id="roadmapTitle">Your Learning Roadmap</h2>
+            <p class="roadmap-subtitle" id="roadmapSubtitle">5 papers selected • Estimated time: 2-3 hours</p>
         </div>
 
         <div class="roadmap-container">
             <div class="roadmap-line"></div>
-            
-            <div class="paper-wrapper">
-                <div class="paper-node"></div>
-                <div class="paper-card">
-                    <div class="difficulty-badge difficulty-beginner">Beginner</div>
-                    <h3 class="paper-title">Introduction to...</h3>
-                    <p class="paper-summary">
-                        paper summary goes here
-                    </p>
-                    <div class="paper-meta">
-                        <div class="meta-item">date published</div>
-                        <div class="meta-item">page number</div>
-                        <div class="meta-item">paper topic</div>
-                        <div class="meta-item">number of citations</div>
-                    </div>
-                    <div class="paper-actions">
-                        <button class="action-btn">view summary</button>
-                        <button class="action-btn">key terms</button>
-                        <button class="action-btn">take quiz</button>
-                        <button class="action-btn">read paper</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="paper-wrapper">
-                <div class="paper-node"></div>
-                <div class="paper-card">
-                    <div class="difficulty-badge difficulty-beginner">Beginner</div>
-                    <h3 class="paper-title">Other paper title</h3>
-                    <p class="paper-summary">
-                        summary goes here
-                    </p>
-                    <div class="paper-meta">
-                        <div class="meta-item">date published</div>
-                        <div class="meta-item">page number</div>
-                        <div class="meta-item">paper topic</div>
-                        <div class="meta-item">number of citations</div>
-                    </div>
-                    <div class="paper-actions">
-                        <button class="action-btn">view summary</button>
-                        <button class="action-btn">key terms</button>
-                        <button class="action-btn">take quiz</button>
-                        <button class="action-btn">read paper</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="paper-wrapper">
-                <div class="paper-node"></div>
-                <div class="paper-card">
-                    <div class="difficulty-badge difficulty-intermediate">Intermediate</div>
-                    <h3 class="paper-title">other paper title</h3>
-                    <p class="paper-summary">
-                        paper summary goes here
-                    </p>
-                    <div class="paper-meta">
-                      <div class="meta-item">date published</div>
-                      <div class="meta-item">page number</div>
-                      <div class="meta-item">paper topic</div>
-                      <div class="meta-item">number of citations</div>
-                    </div>
-                    <div class="paper-actions">
-                        <button class="action-btn">view summary</button>
-                        <button class="action-btn">key terms</button>
-                        <button class="action-btn">take quiz</button>
-                        <button class="action-btn">read paper</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="paper-wrapper">
-                <div class="paper-node"></div>
-                <div class="paper-card">
-                    <div class="difficulty-badge difficulty-intermediate">Intermediate</div>
-                    <h3 class="paper-title">other paper title</h3>
-                    <p class="paper-summary">
-                        paper summary goes here
-                    </p>
-                    <div class="paper-meta">
-                      <div class="meta-item">date published</div>
-                      <div class="meta-item">page number</div>
-                      <div class="meta-item">paper topic</div>
-                      <div class="meta-item">number of citations</div>
-                    </div>
-                    <div class="paper-actions">
-                        <button class="action-btn">view summary</button>
-                        <button class="action-btn">key terms</button>
-                        <button class="action-btn">take quiz</button>
-                        <button class="action-btn">read paper</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="paper-wrapper">
-                <div class="paper-node"></div>
-                <div class="paper-card">
-                    <div class="difficulty-badge difficulty-advanced">Advanced</div>
-                    <h3 class="paper-title">other paper title</h3>
-                    <p class="paper-summary">
-                        paper summary goes here
-                    </p>
-                    <div class="paper-meta">
-                      <div class="meta-item">date published</div>
-                      <div class="meta-item">page number</div>
-                      <div class="meta-item">paper topic</div>
-                      <div class="meta-item">number of citations</div>
-                    </div>
-                    <div class="paper-actions">
-                        <button class="action-btn">view summary</button>
-                        <button class="action-btn">key terms</button>
-                        <button class="action-btn">take quiz</button>
-                        <button class="action-btn">read paper</button>
-                    </div>
-                </div>
+            <div id="papersContainer">
+                <!-- Papers will be populated by JavaScript -->
             </div>
         </div>
     </section>
-
 
     <!-- Footer -->
     <footer style="background: rgba(15, 23, 42, 0.9); border-top: 1px solid rgba(255, 255, 255, 0.1); padding: 3rem 2rem; margin-top: 4rem;">
@@ -841,47 +576,118 @@
     </footer>
 
     <script>
-        function performSearch() {
-            const searchInput = document.getElementById('searchInput');
-            const query = searchInput.value.trim();
-            
-            if (!query) {
-                return;
+        // Sample data for demonstration
+        const sampleResults = [
+            {
+                title: "Introduction to Machine Learning Fundamentals",
+                summary: "A comprehensive overview of machine learning concepts, algorithms, and applications. This paper covers the foundational principles that every ML practitioner should understand.",
+                difficulty: "Beginner",
+                datePublished: "2023",
+                pageNumber: "45",
+                topic: "Machine Learning",
+                citations: "1,234"
+            },
+            {
+                title: "Advanced Neural Network Architectures",
+                summary: "An in-depth exploration of modern neural network designs, including transformers, attention mechanisms, and their applications in natural language processing.",
+                difficulty: "Intermediate",
+                datePublished: "2024",
+                pageNumber: "32",
+                topic: "Deep Learning",
+                citations: "856"
+            }
+        ];
+
+        // Function to generate random results based on search query
+        function generateResults(query) {
+            const topics = ['Machine Learning', 'Data Science', 'Computer Vision', 'Natural Language Processing', 'Robotics', 'Quantum Computing'];
+            const difficulties = ['Beginner', 'Intermediate', 'Advanced'];
+            const results = [];
+
+            for (let i = 0; i < 6; i++) {
+                const topic = topics[Math.floor(Math.random() * topics.length)];
+                const difficulty = difficulties[Math.floor(Math.random() * difficulties.length)];
+                
+                results.push({
+                    title: `${topic} Research Paper ${i + 1}`,
+                    summary: `This paper explores various aspects of ${topic.toLowerCase()} and its applications in modern technology. The research provides valuable insights into current trends and future directions.`,
+                    difficulty: difficulty,
+                    datePublished: (2020 + Math.floor(Math.random() * 5)).toString(),
+                    pageNumber: (20 + Math.floor(Math.random() * 30)).toString(),
+                    topic: topic,
+                    citations: (100 + Math.floor(Math.random() * 2000)).toString()
+                });
             }
 
-            // Save search to recent searches
-            const papersFound = Math.floor(Math.random() * 20) + 5; // Simulate random number of papers
-            addRecentSearch(query, papersFound);
-            
-            // Open search results in the same tab
-            window.location.href = `search-results.html?search=${encodeURIComponent(query)}`;
+            return results;
         }
 
-        function setSearch(query) {
-            document.getElementById('searchInput').value = query;
-            performSearch();
+        // Function to render results
+        function renderResults(results) {
+            const papersContainer = document.getElementById('papersContainer');
+            papersContainer.innerHTML = '';
+
+            results.forEach((result, index) => {
+                const paperWrapper = document.createElement('div');
+                paperWrapper.className = 'paper-wrapper';
+                
+                const difficultyClass = result.difficulty.toLowerCase();
+                
+                paperWrapper.innerHTML = `
+                    <div class="paper-node"></div>
+                    <div class="paper-card">
+                        <div class="difficulty-badge difficulty-${difficultyClass}">${result.difficulty}</div>
+                        <h3 class="paper-title">${result.title}</h3>
+                        <p class="paper-summary">
+                            ${result.summary}
+                        </p>
+                                                 <div class="paper-meta">
+                             <div class="meta-item">
+                                 <div style="font-size: 0.75rem; color: var(--gray); margin-bottom: 0.25rem; font-weight: 600;">PUBLICATION YEAR</div>
+                                 <div>${result.datePublished}</div>
+                             </div>
+                             <div class="meta-item">
+                                 <div style="font-size: 0.75rem; color: var(--gray); margin-bottom: 0.25rem; font-weight: 600;">NUMBER OF PAGES</div>
+                                 <div>${result.pageNumber}</div>
+                             </div>
+                             <div class="meta-item">
+                                 <div style="font-size: 0.75rem; color: var(--gray); margin-bottom: 0.25rem; font-weight: 600;">TOPIC</div>
+                                 <div>${result.topic}</div>
+                             </div>
+                             <div class="meta-item">
+                                 <div style="font-size: 0.75rem; color: var(--gray); margin-bottom: 0.25rem; font-weight: 600;">CITATIONS</div>
+                                 <div>${result.citations}</div>
+                             </div>
+                         </div>
+                        <div class="paper-actions">
+                            <button class="action-btn" onclick="viewSummary(${index})">view summary</button>
+                            <button class="action-btn" onclick="viewKeyTerms(${index})">key terms</button>
+                            <button class="action-btn" onclick="takeQuiz(${index})">take quiz</button>
+                            <button class="action-btn" onclick="readPaper(${index})">read paper</button>
+                        </div>
+                    </div>
+                `;
+                
+                papersContainer.appendChild(paperWrapper);
+            });
         }
 
-        // Allow Enter key to trigger search
-        document.getElementById('searchInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                performSearch();
-            }
-        });
-
-        function toggleDropdown(event) {
-            event.preventDefault();
-            const dropdown = document.getElementById('aboutDropdown');
-            dropdown.classList.toggle('active');
+        // Action button functions
+        function viewSummary(index) {
+            alert(`Viewing summary for paper ${index + 1}`);
         }
 
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(event) {
-            const dropdown = document.getElementById('aboutDropdown');
-            if (!dropdown.contains(event.target)) {
-                dropdown.classList.remove('active');
-            }
-        });
+        function viewKeyTerms(index) {
+            alert(`Viewing key terms for paper ${index + 1}`);
+        }
+
+        function takeQuiz(index) {
+            alert(`Taking quiz for paper ${index + 1}`);
+        }
+
+        function readPaper(index) {
+            alert(`Reading paper ${index + 1}`);
+        }
 
         // Check authentication and update navigation
         function checkAuthAndUpdateNav() {
@@ -912,6 +718,56 @@
             }
         }
 
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'index.html';
+        }
+
+        function toggleDropdown(event) {
+            event.preventDefault();
+            const dropdown = document.getElementById('aboutDropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('aboutDropdown');
+            if (!dropdown.contains(event.target)) {
+                dropdown.classList.remove('active');
+            }
+        });
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthAndUpdateNav();
+            
+            // Get search query from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchQuery = urlParams.get('search');
+            
+            if (searchQuery) {
+                // Update page title and subtitle
+                document.getElementById('roadmapTitle').textContent = `Learning Path: "${searchQuery}"`;
+                document.getElementById('roadmapSubtitle').textContent = `${Math.floor(Math.random() * 20) + 5} papers selected • Estimated time: 2-3 hours`;
+                
+                // Generate and render results
+                const results = generateResults(searchQuery);
+                renderResults(results);
+                
+                // Save to recent searches
+                addRecentSearch(searchQuery, results.length);
+                
+                // Check favorite status
+                checkFavoriteStatus();
+            } else {
+                // Default content
+                document.getElementById('roadmapTitle').textContent = 'Learning Path';
+                document.getElementById('roadmapSubtitle').textContent = '5 papers selected • Estimated time: 2-3 hours';
+                renderResults(sampleResults);
+            }
+        });
+
         // Function to add a new search to recent searches
         function addRecentSearch(query, papersFound) {
             const recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
@@ -940,17 +796,56 @@
             localStorage.setItem('recentSearches', JSON.stringify(recentSearches));
         }
 
-        function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.reload();
+        // Function to toggle favorite status
+        function toggleFavorite() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchQuery = urlParams.get('search');
+            
+            if (!searchQuery) return;
+            
+            const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+            const starBtn = document.getElementById('starBtn');
+            
+            const existingIndex = favorites.findIndex(fav => fav.query.toLowerCase() === searchQuery.toLowerCase());
+            
+            if (existingIndex !== -1) {
+                // Remove from favorites
+                favorites.splice(existingIndex, 1);
+                starBtn.classList.remove('favorited');
+                starBtn.innerHTML = '<span class="star-icon">☆</span> Save Topic';
+            } else {
+                // Add to favorites
+                const newFavorite = {
+                    query: searchQuery,
+                    papersFound: document.getElementById('roadmapSubtitle').textContent.split(' ')[0],
+                    timestamp: new Date().toISOString(),
+                    timeAgo: 'Just now'
+                };
+                favorites.unshift(newFavorite);
+                starBtn.classList.add('favorited');
+                starBtn.innerHTML = '<span class="star-icon">★</span> Saved';
+            }
+            
+            localStorage.setItem('favorites', JSON.stringify(favorites));
         }
 
-        // Check authentication on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            checkAuthAndUpdateNav();
-        });
-
+        // Function to check if current search is favorited
+        function checkFavoriteStatus() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchQuery = urlParams.get('search');
+            
+            if (!searchQuery) return;
+            
+            const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+            const starBtn = document.getElementById('starBtn');
+            
+            const isFavorited = favorites.some(fav => fav.query.toLowerCase() === searchQuery.toLowerCase());
+            
+            if (isFavorited) {
+                starBtn.classList.add('favorited');
+                starBtn.innerHTML = '<span class="star-icon">★</span> Saved';
+            }
+        }
     </script>
 </body>
 </html>

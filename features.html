@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Features - Paper Rank</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #22d3ee;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --success: #10b981;
+            --card-bg: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Animated background */
+        .bg-animation {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+            top: -200px;
+            right: -200px;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .bg-animation::after {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--secondary) 0%, transparent 70%);
+            bottom: -300px;
+            left: -300px;
+            animation: float 25s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(50px, -50px) scale(1.1); }
+        }
+
+        /* Navigation */
+        nav {
+            padding: 1.5rem 2rem;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            letter-spacing: -0.01em;
+        }
+
+        .logo-icon {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--gray);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: var(--light);
+        }
+
+        .nav-link.active {
+            color: var(--primary);
+        }
+
+        /* Dropdown styles */
+        .nav-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            min-width: 200px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            top: 100%;
+            left: 0;
+            margin-top: 0.5rem;
+        }
+
+        .dropdown-content a {
+            color: var(--gray);
+            padding: 0.75rem 1rem;
+            text-decoration: none;
+            display: block;
+            transition: all 0.3s;
+            border-radius: 8px;
+            margin: 0.25rem;
+        }
+
+        .dropdown-content a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+        }
+
+        .nav-dropdown.active .dropdown-content {
+            display: block;
+        }
+
+        .nav-dropdown.active .nav-link {
+            color: var(--primary);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            display: inline-block;
+            letter-spacing: -0.01em;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            display: inline-block;
+            letter-spacing: -0.01em;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+            box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
+        }
+
+        /* Features Hero */
+        .features-hero {
+            padding: 6rem 2rem 4rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .features-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .features-hero h1 {
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: white;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+        }
+
+        .features-hero .subtitle {
+            font-size: 1.25rem;
+            color: white;
+            margin-bottom: 3rem;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Features Grid */
+        .features-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2.5rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.2);
+        }
+
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--light);
+            letter-spacing: -0.01em;
+        }
+
+        .feature-description {
+            color: var(--gray);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin-top: 1rem;
+        }
+
+        .feature-list li {
+            color: var(--gray);
+            margin-bottom: 0.5rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .feature-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        /* Demo Section */
+        .demo-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .demo-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            margin-bottom: 2rem;
+        }
+
+        .demo-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--light);
+        }
+
+        .demo-description {
+            color: var(--gray);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .features-hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+
+    <nav>
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">🧭</div>
+                <span>Paper Rank</span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Home</a>
+                <div class="nav-dropdown" id="aboutDropdown">
+                    <a href="#" class="nav-link" onclick="toggleDropdown(event)">About</a>
+                    <div class="dropdown-content">
+                        <a href="our-mission.html">Our Mission</a>
+                        <a href="our-team.html">Our Team</a>
+                    </div>
+                </div>
+                <a href="features.html" class="nav-link active">Features</a>
+                <a href="register.html" class="btn-primary">Sign Up</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="features" style="margin-top: 6rem;">
+        <h2 style="text-align: center; font-size: 2.5rem; font-weight: 600; margin-bottom: 1rem; letter-spacing: -0.02em;">Learn Smarter, Not Harder</h2>
+        <p style="text-align: center; color: var(--gray); margin-bottom: 3rem;">We make scientific literature accessible and engaging</p>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">icon</div>
+                <h3 class="feature-title">Personalized Paths</h3>
+                <p class="feature-description">AI-curated learning sequences tailored to your knowledge level and interests</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">icon</div>
+                <h3 class="feature-title">Plain Summaries</h3>
+                <p class="feature-description">Complex research explained clearly without losing scientific accuracy</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">icon</div>
+                <h3 class="feature-title">Track Progress</h3>
+                <p class="feature-description">Build streaks, save topics, and visualize your learning journey</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">icon</div>
+                <h3 class="feature-title">Interactive Quizzes</h3>
+                <p class="feature-description">Test your understanding with auto-generated comprehension questions</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">icon</div>
+                <h3 class="feature-title">Vocabulary Builder</h3>
+                <p class="feature-description">Master scientific terminology with context-aware definitions</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">icon</div>
+                <h3 class="feature-title">From Zero to Expert</h3>
+                <p class="feature-description">Start anywhere and progress at your own pace through cutting-edge research</p>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="demo-section">
+        <div class="demo-card">
+            <h3 class="demo-title">Try It Now</h3>
+            <p class="demo-description">
+                Experience the power of Paper Rank with our interactive demo. Search for any research topic and see how our ranking algorithm works in real-time.
+            </p>
+            <a href="index.html" class="btn-primary">Start Demo</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="background: rgba(15, 23, 42, 0.9); border-top: 1px solid rgba(255, 255, 255, 0.1); padding: 3rem 2rem; margin-top: 4rem;">
+        <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: flex-start;">
+            <!-- Left Section -->
+            <div style="display: flex; gap: 4rem;">
+                <!-- Legals -->
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    <h4 style="color: var(--light); font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem;">Legals</h4>
+                    <a href="#" style="color: var(--gray); text-decoration: none; font-size: 0.85rem; transition: color 0.3s;">Cookie Policy</a>
+                    <a href="#" style="color: var(--gray); text-decoration: none; font-size: 0.85rem; transition: color 0.3s;">Privacy Policy</a>
+                    <a href="#" style="color: var(--gray); text-decoration: none; font-size: 0.85rem; transition: color 0.3s;">Terms and Conditions</a>
+                </div>
+
+                <!-- Product -->
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    <h4 style="color: var(--light); font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem;">Product</h4>
+                    <a href="faq.html" style="color: var(--gray); text-decoration: none; font-size: 0.85rem; transition: color 0.3s;">FAQ</a>
+                    <a href="about.html" style="color: var(--gray); text-decoration: none; font-size: 0.85rem; transition: color 0.3s;">About</a>
+                    <a href="contact.html" style="color: var(--gray); text-decoration: none; font-size: 0.85rem; transition: color 0.3s;">Contact</a>
+                </div>
+            </div>
+
+            <!-- Right Section -->
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; color: var(--gray);">
+                        📷
+                    </div>
+                    <span style="color: var(--gray); font-size: 0.9rem;">support@paperrank.com</span>
+                </div>
+                <p style="color: var(--gray); font-size: 0.85rem;">Copyright © 2025 Paper Rank. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function toggleDropdown(event) {
+            event.preventDefault();
+            const dropdown = document.getElementById('aboutDropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('aboutDropdown');
+            if (!dropdown.contains(event.target)) {
+                dropdown.classList.remove('active');
+            }
+        });
+
+        // Check authentication and update navigation
+        function checkAuthAndUpdateNav() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            const navLinks = document.querySelector('.nav-links');
+            
+            if (token && user) {
+                // User is logged in - show dashboard and logout
+                const signUpBtn = navLinks.querySelector('.btn-primary');
+                if (signUpBtn) {
+                    signUpBtn.remove();
+                }
+                
+                // Add dashboard link
+                const dashboardLink = document.createElement('a');
+                dashboardLink.href = 'dashboard.html';
+                dashboardLink.className = 'nav-link';
+                dashboardLink.textContent = 'Dashboard';
+                navLinks.appendChild(dashboardLink);
+                
+                // Add logout button
+                const logoutBtn = document.createElement('button');
+                logoutBtn.className = 'btn-danger';
+                logoutBtn.textContent = 'Logout';
+                logoutBtn.onclick = logout;
+                navLinks.appendChild(logoutBtn);
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.reload();
+        }
+
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', checkAuthAndUpdateNav);
+    </script>
+
+</body>
+</html>
