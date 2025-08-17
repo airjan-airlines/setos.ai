@@ -415,6 +415,17 @@
             transform: translateY(-2px);
         }
 
+        .action-btn.completed {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .action-btn.completed:hover {
+            background: var(--success);
+            color: white;
+        }
+
         /* Return to Search and Star Button */
         .search-actions {
             display: flex;
@@ -501,18 +512,18 @@
                 <div class="logo-icon">🧭</div>
                 <span>Paper Rank</span>
             </div>
-            <div class="nav-links">
-                <a href="index.html" class="nav-link">Home</a>
-                <div class="nav-dropdown" id="aboutDropdown">
-                    <a href="#" class="nav-link" onclick="toggleDropdown(event)">About</a>
-                    <div class="dropdown-content">
-                        <a href="our-mission.html">Our Mission</a>
-                        <a href="our-team.html">Our Team</a>
+                            <div class="nav-links">
+                    <a href="index.html" class="nav-link">Home</a>
+                    <a href="features.html" class="nav-link">Solution</a>
+                    <div class="nav-dropdown" id="aboutDropdown">
+                        <a href="#" class="nav-link" onclick="toggleDropdown(event)">About</a>
+                        <div class="dropdown-content">
+                            <a href="our-mission.html">Our Mission</a>
+                            <a href="our-team.html">Our Team</a>
+                        </div>
                     </div>
+                    <a href="register.html" class="btn-primary">Sign Up</a>
                 </div>
-                <a href="features.html" class="nav-link">Features</a>
-                <a href="register.html" class="btn-primary">Sign Up</a>
-            </div>
         </div>
     </nav>
 
@@ -627,11 +638,24 @@
             const papersContainer = document.getElementById('papersContainer');
             papersContainer.innerHTML = '';
 
+            // Get current progress data
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchQuery = urlParams.get('search');
+            const progressData = JSON.parse(localStorage.getItem('topicProgress') || '{}');
+            const topicProgress = searchQuery ? progressData[searchQuery] : null;
+
             results.forEach((result, index) => {
                 const paperWrapper = document.createElement('div');
                 paperWrapper.className = 'paper-wrapper';
                 
                 const difficultyClass = result.difficulty.toLowerCase();
+                
+                // Check if this paper has progress
+                const paperProgress = topicProgress && topicProgress.completedPapers[index];
+                const summaryCompleted = paperProgress && paperProgress.summary;
+                const keyTermsCompleted = paperProgress && paperProgress.keyTerms;
+                const quizCompleted = paperProgress && paperProgress.quiz;
+                const readCompleted = paperProgress && paperProgress.read;
                 
                 paperWrapper.innerHTML = `
                     <div class="paper-node"></div>
@@ -660,10 +684,18 @@
                              </div>
                          </div>
                         <div class="paper-actions">
-                            <button class="action-btn" onclick="viewSummary(${index})">view summary</button>
-                            <button class="action-btn" onclick="viewKeyTerms(${index})">key terms</button>
-                            <button class="action-btn" onclick="takeQuiz(${index})">take quiz</button>
-                            <button class="action-btn" onclick="readPaper(${index})">read paper</button>
+                            <button class="action-btn ${summaryCompleted ? 'completed' : ''}" onclick="viewSummary(${index})">
+                                ${summaryCompleted ? '✓ ' : ''}view summary
+                            </button>
+                            <button class="action-btn ${keyTermsCompleted ? 'completed' : ''}" onclick="viewKeyTerms(${index})">
+                                ${keyTermsCompleted ? '✓ ' : ''}key terms
+                            </button>
+                            <button class="action-btn ${quizCompleted ? 'completed' : ''}" onclick="takeQuiz(${index})">
+                                ${quizCompleted ? '✓ ' : ''}take quiz
+                            </button>
+                            <button class="action-btn ${readCompleted ? 'completed' : ''}" onclick="readPaper(${index})">
+                                ${readCompleted ? '✓ ' : ''}read paper
+                            </button>
                         </div>
                     </div>
                 `;
@@ -674,19 +706,238 @@
 
         // Action button functions
         function viewSummary(index) {
+            updateProgress(index, 'summary');
             alert(`Viewing summary for paper ${index + 1}`);
         }
 
         function viewKeyTerms(index) {
+            updateProgress(index, 'keyTerms');
             alert(`Viewing key terms for paper ${index + 1}`);
         }
 
         function takeQuiz(index) {
+            updateProgress(index, 'quiz');
             alert(`Taking quiz for paper ${index + 1}`);
         }
 
         function readPaper(index) {
+            updateProgress(index, 'read');
             alert(`Reading paper ${index + 1}`);
+        }
+
+        // Function to update progress for a specific paper
+        function updateProgress(paperIndex, action) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchQuery = urlParams.get('search');
+            
+            if (!searchQuery) return;
+            
+            // Get current progress data
+            const progressData = JSON.parse(localStorage.getItem('topicProgress') || '{}');
+            
+            // Initialize progress for this topic if it doesn't exist
+            if (!progressData[searchQuery]) {
+                progressData[searchQuery] = {
+                    totalPapers: 0,
+                    completedPapers: {},
+                    lastUpdated: new Date().toISOString(),
+                    lastActivity: new Date().toISOString(),
+                    papersData: []
+                };
+            }
+            
+            // Update the specific paper's progress
+            if (!progressData[searchQuery].completedPapers[paperIndex]) {
+                progressData[searchQuery].completedPapers[paperIndex] = {
+                    summary: false,
+                    keyTerms: false,
+                    quiz: false,
+                    read: false
+                };
+            }
+            
+            // Check if this action was already completed
+            const wasAlreadyCompleted = progressData[searchQuery].completedPapers[paperIndex][action];
+            
+            // Mark the action as completed
+            progressData[searchQuery].completedPapers[paperIndex][action] = true;
+            progressData[searchQuery].lastUpdated = new Date().toISOString();
+            
+            // Only update lastActivity if this is NEW progress (not revisiting)
+            if (!wasAlreadyCompleted) {
+                progressData[searchQuery].lastActivity = new Date().toISOString();
+            }
+            
+            // Save back to localStorage
+            localStorage.setItem('topicProgress', JSON.stringify(progressData));
+            
+            // Update the UI to show progress
+            updateProgressDisplay();
+            
+            // Re-render the results to show updated button states
+            if (searchQuery) {
+                const results = generateResults(searchQuery);
+                renderResults(results);
+            }
+            
+            // Only check and update streak if this was NEW progress
+            if (!wasAlreadyCompleted) {
+                checkAndUpdateStreakFromActivity();
+            }
+        }
+
+        // Function to check and update streak from activity
+        function checkAndUpdateStreakFromActivity() {
+            const streakData = JSON.parse(localStorage.getItem('streakData') || '{}');
+            const today = new Date().toDateString();
+            const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString();
+            
+            // Check if we've already processed today
+            if (streakData.lastActivityCheck === today) {
+                return;
+            }
+            
+            // Check for activity in the last 24 hours
+            const hasActivity = checkForRecentActivity();
+            
+            if (hasActivity) {
+                // Initialize if needed
+                if (!streakData.completedDates) {
+                    streakData.completedDates = [];
+                }
+                
+                // Check if already completed today
+                if (!streakData.completedDates.includes(today)) {
+                    // Add today to completed dates
+                    streakData.completedDates.push(today);
+                    
+                    // Update streak logic
+                    if (streakData.lastCompletedDate === yesterday || streakData.lastCompletedDate === today) {
+                        // Continue streak
+                        streakData.currentStreak++;
+                    } else {
+                        // Start new streak
+                        streakData.currentStreak = 1;
+                    }
+                    
+                    // Update longest streak
+                    if (streakData.currentStreak > streakData.longestStreak) {
+                        streakData.longestStreak = streakData.currentStreak;
+                    }
+                    
+                    streakData.lastCompletedDate = today;
+                    
+                    // Show celebration for new streak
+                    showStreakCelebration(streakData.currentStreak);
+                }
+            }
+            
+            // Mark today as checked
+            streakData.lastActivityCheck = today;
+            
+            // Save to localStorage
+            localStorage.setItem('streakData', JSON.stringify(streakData));
+        }
+
+        function checkForRecentActivity() {
+            const now = new Date();
+            const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+            
+            // Check recent searches
+            const recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+            const recentActivity = recentSearches.some(search => {
+                const searchTime = new Date(search.timestamp);
+                return searchTime > twentyFourHoursAgo;
+            });
+            
+            // Check topic progress
+            const topicProgress = JSON.parse(localStorage.getItem('topicProgress') || '{}');
+            const progressActivity = Object.values(topicProgress).some(topic => {
+                if (topic.lastActivity) {
+                    const activityTime = new Date(topic.lastActivity);
+                    return activityTime > twentyFourHoursAgo;
+                }
+                return false;
+            });
+            
+            return recentActivity || progressActivity;
+        }
+
+        function showStreakCelebration(streak) {
+            // Show celebration message
+            let message = '';
+            if (streak === 1) {
+                message = '🎉 First day completed! You\'re on your way!';
+            } else if (streak === 7) {
+                message = '🔥 Amazing! You\'ve completed a full week!';
+            } else if (streak === 30) {
+                message = '🌟 Incredible! You\'ve completed a full month!';
+            } else if (streak === 100) {
+                message = '💎 Legendary! 100 days of learning!';
+            } else {
+                message = `🔥 Great job! ${streak} day streak!`;
+            }
+            
+            // Create temporary celebration element
+            const celebration = document.createElement('div');
+            celebration.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+                color: white;
+                padding: 2rem;
+                border-radius: 20px;
+                font-size: 1.2rem;
+                font-weight: 600;
+                text-align: center;
+                z-index: 1000;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+                animation: celebrationIn 0.5s ease-out;
+            `;
+            celebration.textContent = message;
+            
+            document.body.appendChild(celebration);
+            
+            // Remove celebration after 3 seconds
+            setTimeout(() => {
+                celebration.style.animation = 'celebrationOut 0.5s ease-in';
+                setTimeout(() => {
+                    document.body.removeChild(celebration);
+                }, 500);
+            }, 3000);
+        }
+
+        // Function to update progress display on the page
+        function updateProgressDisplay() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchQuery = urlParams.get('search');
+            
+            if (!searchQuery) return;
+            
+            const progressData = JSON.parse(localStorage.getItem('topicProgress') || '{}');
+            const topicProgress = progressData[searchQuery];
+            
+            if (!topicProgress) return;
+            
+            // Calculate overall progress - only count unique completed actions
+            const totalActions = Object.keys(topicProgress.completedPapers).length * 4; // 4 actions per paper
+            let completedActions = 0;
+            
+            Object.values(topicProgress.completedPapers).forEach(paper => {
+                if (paper.summary) completedActions++;
+                if (paper.keyTerms) completedActions++;
+                if (paper.quiz) completedActions++;
+                if (paper.read) completedActions++;
+            });
+            
+            const progressPercentage = totalActions > 0 ? (completedActions / totalActions) * 100 : 0;
+            
+            // Update the subtitle to show progress
+            const subtitle = document.getElementById('roadmapSubtitle');
+            const papersCount = document.getElementById('roadmapSubtitle').textContent.split(' ')[0];
+            subtitle.textContent = `${papersCount} papers selected • ${Math.round(progressPercentage)}% completed • Estimated time: 2-3 hours`;
         }
 
         // Check authentication and update navigation
@@ -709,12 +960,7 @@
                 dashboardLink.textContent = 'Dashboard';
                 navLinks.appendChild(dashboardLink);
                 
-                // Add logout button
-                const logoutBtn = document.createElement('button');
-                logoutBtn.className = 'btn-danger';
-                logoutBtn.textContent = 'Logout';
-                logoutBtn.onclick = logout;
-                navLinks.appendChild(logoutBtn);
+                                 // Note: Logout button is now only on the dashboard page
             }
         }
 
@@ -758,8 +1004,25 @@
                 // Save to recent searches
                 addRecentSearch(searchQuery, results.length);
                 
-                // Check favorite status
-                checkFavoriteStatus();
+                        // Check favorite status
+        checkFavoriteStatus();
+        
+        // Show initial progress
+        updateProgressDisplay();
+        
+        // Add celebration animations to CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes celebrationIn {
+                from { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+                to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            }
+            @keyframes celebrationOut {
+                from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                to { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            }
+        `;
+        document.head.appendChild(style);
             } else {
                 // Default content
                 document.getElementById('roadmapTitle').textContent = 'Learning Path';
@@ -794,6 +1057,18 @@
             }
             
             localStorage.setItem('recentSearches', JSON.stringify(recentSearches));
+            
+            // Initialize progress data for this topic if it doesn't exist
+            const progressData = JSON.parse(localStorage.getItem('topicProgress') || '{}');
+            if (!progressData[query]) {
+                progressData[query] = {
+                    totalPapers: papersFound,
+                    completedPapers: {},
+                    lastUpdated: new Date().toISOString(),
+                    papersData: []
+                };
+                localStorage.setItem('topicProgress', JSON.stringify(progressData));
+            }
         }
 
         // Function to toggle favorite status
@@ -808,23 +1083,35 @@
             
             const existingIndex = favorites.findIndex(fav => fav.query.toLowerCase() === searchQuery.toLowerCase());
             
-            if (existingIndex !== -1) {
-                // Remove from favorites
-                favorites.splice(existingIndex, 1);
-                starBtn.classList.remove('favorited');
-                starBtn.innerHTML = '<span class="star-icon">☆</span> Save Topic';
-            } else {
-                // Add to favorites
-                const newFavorite = {
-                    query: searchQuery,
-                    papersFound: document.getElementById('roadmapSubtitle').textContent.split(' ')[0],
-                    timestamp: new Date().toISOString(),
-                    timeAgo: 'Just now'
-                };
-                favorites.unshift(newFavorite);
-                starBtn.classList.add('favorited');
-                starBtn.innerHTML = '<span class="star-icon">★</span> Saved';
-            }
+                         if (existingIndex !== -1) {
+                 // Remove from favorites
+                 favorites.splice(existingIndex, 1);
+                 starBtn.classList.remove('favorited');
+                 starBtn.innerHTML = '<span class="star-icon">☆</span>';
+             } else {
+                 // Add to favorites
+                 const newFavorite = {
+                     query: searchQuery,
+                     papersFound: document.getElementById('roadmapSubtitle').textContent.split(' ')[0],
+                     timestamp: new Date().toISOString(),
+                     timeAgo: 'Just now'
+                 };
+                 favorites.unshift(newFavorite);
+                 starBtn.classList.add('favorited');
+                 starBtn.innerHTML = '<span class="star-icon">★</span>';
+                 
+                 // Ensure progress data exists for this topic
+                 const progressData = JSON.parse(localStorage.getItem('topicProgress') || '{}');
+                 if (!progressData[searchQuery]) {
+                     progressData[searchQuery] = {
+                         totalPapers: parseInt(document.getElementById('roadmapSubtitle').textContent.split(' ')[0]),
+                         completedPapers: {},
+                         lastUpdated: new Date().toISOString(),
+                         papersData: []
+                     };
+                     localStorage.setItem('topicProgress', JSON.stringify(progressData));
+                 }
+             }
             
             localStorage.setItem('favorites', JSON.stringify(favorites));
         }
@@ -841,10 +1128,10 @@
             
             const isFavorited = favorites.some(fav => fav.query.toLowerCase() === searchQuery.toLowerCase());
             
-            if (isFavorited) {
-                starBtn.classList.add('favorited');
-                starBtn.innerHTML = '<span class="star-icon">★</span> Saved';
-            }
+                         if (isFavorited) {
+                 starBtn.classList.add('favorited');
+                 starBtn.innerHTML = '<span class="star-icon">★</span>';
+             }
         }
     </script>
 </body>

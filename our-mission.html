@@ -329,18 +329,18 @@
                 <div class="logo-icon">🧭</div>
                 <span>Paper Rank</span>
             </div>
-            <div class="nav-links">
-                <a href="index.html" class="nav-link">Home</a>
-                <div class="nav-dropdown" id="aboutDropdown">
-                    <a href="#" class="nav-link active" onclick="toggleDropdown(event)">About</a>
-                    <div class="dropdown-content">
-                        <a href="our-mission.html">Our Mission</a>
-                        <a href="our-team.html">Our Team</a>
+                            <div class="nav-links">
+                    <a href="index.html" class="nav-link">Home</a>
+                    <a href="features.html" class="nav-link">Solution</a>
+                    <div class="nav-dropdown" id="aboutDropdown">
+                        <a href="#" class="nav-link active" onclick="toggleDropdown(event)">About</a>
+                        <div class="dropdown-content">
+                            <a href="our-mission.html">Our Mission</a>
+                            <a href="our-team.html">Our Team</a>
+                        </div>
                     </div>
+                    <a href="register.html" class="btn-primary">Sign Up</a>
                 </div>
-                <a href="features.html" class="nav-link">Features</a>
-                <a href="register.html" class="btn-primary">Sign Up</a>
-            </div>
         </div>
     </nav>
 
@@ -441,12 +441,7 @@
                 dashboardLink.textContent = 'Dashboard';
                 navLinks.appendChild(dashboardLink);
                 
-                // Add logout button
-                const logoutBtn = document.createElement('button');
-                logoutBtn.className = 'btn-danger';
-                logoutBtn.textContent = 'Logout';
-                logoutBtn.onclick = logout;
-                navLinks.appendChild(logoutBtn);
+                                 // Note: Logout button is now only on the dashboard page
             }
         }
 

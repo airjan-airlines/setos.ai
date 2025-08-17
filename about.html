@@ -331,6 +331,7 @@
             </div>
             <div class="nav-links">
                 <a href="index.html" class="nav-link">Home</a>
+                <a href="features.html" class="nav-link">Features</a>
                 <div class="nav-dropdown" id="aboutDropdown">
                     <a href="#" class="nav-link active" onclick="toggleDropdown(event)">About</a>
                     <div class="dropdown-content">
@@ -338,7 +339,6 @@
                         <a href="our-team.html">Our Team</a>
                     </div>
                 </div>
-                <a href="features.html" class="nav-link">Features</a>
                 <a href="faq.html" class="nav-link">FAQ</a>
                 <a href="contact.html" class="nav-link">Contact</a>
                 <a href="#" class="btn-primary">Sign Up</a>
@@ -443,12 +443,7 @@
                 dashboardLink.textContent = 'Dashboard';
                 navLinks.appendChild(dashboardLink);
                 
-                // Add logout button
-                const logoutBtn = document.createElement('button');
-                logoutBtn.className = 'btn-danger';
-                logoutBtn.textContent = 'Logout';
-                logoutBtn.onclick = logout;
-                navLinks.appendChild(logoutBtn);
+                                 // Note: Logout button is now only on the dashboard page
             }
         }
 
