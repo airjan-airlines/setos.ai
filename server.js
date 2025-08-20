@@ -40,7 +40,7 @@ app.post('/api/register', async (req, res) => {
         if (existingUser) {
             return res.status(400).json({ 
                 success: false, 
-                message: 'User with this email already exists' 
+                message: 'An account with this email already exists. Please sign in instead.' 
             });
         }
 
@@ -353,7 +353,7 @@ app.post('/api/send-registration-verification', async (req, res) => {
         if (existingUser) {
             return res.status(400).json({ 
                 success: false, 
-                message: 'User with this email already exists' 
+                message: 'An account with this email already exists. Please sign in instead.' 
             });
         }
 

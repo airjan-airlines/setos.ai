@@ -45,9 +45,9 @@ const hasValidEmailConfig = config.email.user &&
                            config.email.user !== 'your-email@gmail.com' && 
                            config.email.pass !== 'your-app-password';
 
-// Generate verification token
+// Generate verification token (6-digit code)
 function generateVerificationToken() {
-    return crypto.randomBytes(32).toString('hex');
+    return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
 // Send verification email
@@ -77,8 +77,18 @@ async function sendVerificationEmail(email, firstName, verificationToken, baseUr
                     
                     <p style="color: #666; line-height: 1.6;">
                         Thank you for creating your setosa account! To complete your registration and start your academic journey, 
-                        please verify your email address by clicking the button below.
+                        please verify your email address using the verification code below.
                     </p>
+                    
+                    <div style="text-align: center; margin: 30px 0; padding: 20px; background: #f0f4ff; border-radius: 10px; border: 2px solid #667eea;">
+                        <h3 style="color: #333; margin: 0 0 10px 0; font-size: 16px;">Your 6-Digit Verification Code:</h3>
+                        <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd; font-family: 'Courier New', monospace; font-size: 32px; font-weight: bold; color: #667eea; letter-spacing: 8px; text-align: center;">
+                            ${verificationToken}
+                        </div>
+                        <p style="color: #666; font-size: 14px; margin: 10px 0 0 0;">
+                            Enter this 6-digit code on the sign-up page to verify your email
+                        </p>
+                    </div>
                     
                     <div style="text-align: center; margin: 30px 0;">
                         <a href="${verificationUrl}" 
@@ -90,12 +100,12 @@ async function sendVerificationEmail(email, firstName, verificationToken, baseUr
                                   display: inline-block; 
                                   font-weight: bold;
                                   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
-                            Verify Email Address
+                            Or Click Here to Verify
                         </a>
                     </div>
                     
                     <p style="color: #666; line-height: 1.6; font-size: 14px;">
-                        If the button doesn't work, you can copy and paste this link into your browser:
+                        Alternatively, you can copy and paste this link into your browser:
                     </p>
                     
                     <p style="color: #667eea; word-break: break-all; font-size: 14px;">

@@ -683,7 +683,7 @@
                 <div class="form-group" id="verificationCodeGroup" style="display: none;">
                     <label for="verificationCode" class="form-label">Verification Code</label>
                     <div class="verification-code-container">
-                        <input type="text" id="verificationCode" name="verificationCode" class="form-input" placeholder="Enter the code from your email">
+                        <input type="text" id="verificationCode" name="verificationCode" class="form-input" placeholder="Enter 6-digit code from email" maxlength="6" pattern="[0-9]*" inputmode="numeric">
                         <button type="button" id="verifyCodeBtn" class="verification-btn" onclick="verifyEmailCode()">
                             Verify Code
                         </button>
@@ -812,6 +812,11 @@
             }
         }
 
+        // Allow only numeric input for verification code
+        document.getElementById('verificationCode').addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+
         // Global variables for email verification
         let emailVerified = false;
         let verificationToken = null;
@@ -859,6 +864,20 @@
                     sendBtn.textContent = 'Resend';
                 } else {
                     showError('emailError', result.message);
+                    
+                    // If it's a duplicate account error, add a link to login
+                    if (result.message.includes('already exists')) {
+                        const loginLink = document.createElement('div');
+                        loginLink.innerHTML = `
+                            <p style="margin-top: 10px; color: #666; font-size: 14px;">
+                                <a href="login.html" style="color: #667eea; text-decoration: none; font-weight: 500;">
+                                    → Go to Login Page
+                                </a>
+                            </p>
+                        `;
+                        document.getElementById('emailError').appendChild(loginLink);
+                    }
+                    
                     sendBtn.textContent = 'Send Verification';
                 }
             } catch (error) {
@@ -881,6 +900,12 @@
 
             if (!code) {
                 showError('verificationCodeError', 'Please enter the verification code');
+                return;
+            }
+
+            // Validate that code is exactly 6 digits
+            if (!/^\d{6}$/.test(code)) {
+                showError('verificationCodeError', 'Please enter a valid 6-digit verification code');
                 return;
             }
 
@@ -1025,6 +1050,20 @@
                     } else {
                         // Show error message
                         showError('emailError', result.message);
+                        
+                        // If it's a duplicate account error, add a link to login
+                        if (result.message.includes('already exists')) {
+                            const loginLink = document.createElement('div');
+                            loginLink.innerHTML = `
+                                <p style="margin-top: 10px; color: #666; font-size: 14px;">
+                                    <a href="login.html" style="color: #667eea; text-decoration: none; font-weight: 500;">
+                                        → Go to Login Page
+                                    </a>
+                                </p>
+                            `;
+                            document.getElementById('emailError').appendChild(loginLink);
+                        }
+                        
                         submitBtn.disabled = false;
                         submitBtn.textContent = 'Create Account';
                     }
