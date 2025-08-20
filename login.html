@@ -656,11 +656,11 @@
 
             <div class="social-login">
                 <a href="#" class="social-btn">
-                    <span>🔍</span>
+                    <span>🔍</span> //change this to a google icon
                     Google
                 </a>
                 <a href="#" class="social-btn">
-                    <span>📘</span>
+                    <span>📘</span> //change this to a facebook icon
                     Facebook
                 </a>
             </div>
@@ -726,10 +726,10 @@
             
             if (field.type === 'password') {
                 field.type = 'text';
-                btn.textContent = '🙈';
+                btn.textContent = '🙈'; //change this to an eye closed icon
             } else {
                 field.type = 'password';
-                btn.textContent = '👁️';
+                btn.textContent = '👁️'; //change to an eye open icon
             }
         }
 
@@ -802,6 +802,20 @@
                     } else {
                         // Show error message
                         showError('emailError', result.message);
+                        
+                        // If it's an email verification error, show resend option
+                        if (result.message.includes('verify your email')) {
+                            const resendDiv = document.createElement('div');
+                            resendDiv.innerHTML = `
+                                <p style="margin-top: 10px; color: #666; font-size: 14px;">
+                                    <a href="#" onclick="resendVerification('${loginData.email}')" style="color: #667eea; text-decoration: none;">
+                                        Resend verification email
+                                    </a>
+                                </p>
+                            `;
+                            document.getElementById('emailError').appendChild(resendDiv);
+                        }
+                        
                         submitBtn.disabled = false;
                         submitBtn.textContent = 'Sign In';
                     }
@@ -818,6 +832,29 @@
             const errorElement = document.getElementById(elementId);
             errorElement.textContent = message;
             errorElement.style.display = 'block';
+        }
+
+        async function resendVerification(email) {
+            try {
+                const response = await fetch('/api/resend-verification', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('Verification email sent successfully! Please check your inbox.');
+                } else {
+                    alert(result.message || 'Failed to send verification email. Please try again.');
+                }
+            } catch (error) {
+                console.error('Resend verification error:', error);
+                alert('Network error. Please try again.');
+            }
         }
     </script>
 </body>

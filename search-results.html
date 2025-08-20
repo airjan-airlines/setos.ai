@@ -196,7 +196,6 @@
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
             box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
         }
 
@@ -608,24 +607,42 @@
             }
         ];
 
-        // Function to generate random results based on search query
+        // Function to generate deterministic results based on search query
         function generateResults(query) {
             const topics = ['Machine Learning', 'Data Science', 'Computer Vision', 'Natural Language Processing', 'Robotics', 'Quantum Computing'];
             const difficulties = ['Beginner', 'Intermediate', 'Advanced'];
             const results = [];
 
+            // Create a simple hash from the query to make results deterministic
+            let hash = 0;
+            for (let i = 0; i < query.length; i++) {
+                const char = query.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // Convert to 32-bit integer
+            }
+            
+            // Use hash to seed the selection
+            const seed = Math.abs(hash);
+
             for (let i = 0; i < 6; i++) {
-                const topic = topics[Math.floor(Math.random() * topics.length)];
-                const difficulty = difficulties[Math.floor(Math.random() * difficulties.length)];
+                const topicIndex = (seed + i * 7) % topics.length;
+                const difficultyIndex = (seed + i * 11) % difficulties.length;
+                const topic = topics[topicIndex];
+                const difficulty = difficulties[difficultyIndex];
+                
+                // Generate deterministic values based on seed and index
+                const yearOffset = (seed + i * 13) % 5;
+                const pageOffset = (seed + i * 17) % 30;
+                const citationOffset = (seed + i * 19) % 2000;
                 
                 results.push({
                     title: `${topic} Research Paper ${i + 1}`,
                     summary: `This paper explores various aspects of ${topic.toLowerCase()} and its applications in modern technology. The research provides valuable insights into current trends and future directions.`,
                     difficulty: difficulty,
-                    datePublished: (2020 + Math.floor(Math.random() * 5)).toString(),
-                    pageNumber: (20 + Math.floor(Math.random() * 30)).toString(),
+                    datePublished: (2020 + yearOffset).toString(),
+                    pageNumber: (20 + pageOffset).toString(),
                     topic: topic,
-                    citations: (100 + Math.floor(Math.random() * 2000)).toString()
+                    citations: (100 + citationOffset).toString()
                 });
             }
 
@@ -994,7 +1011,9 @@
             if (searchQuery) {
                 // Update page title and subtitle
                 document.getElementById('roadmapTitle').textContent = `Learning Path: "${searchQuery}"`;
-                document.getElementById('roadmapSubtitle').textContent = `${Math.floor(Math.random() * 20) + 5} papers selected • Estimated time: 2-3 hours`;
+                // Use deterministic paper count based on search query
+                const paperCount = 6; // Fixed count since we always generate 6 papers
+                document.getElementById('roadmapSubtitle').textContent = `${paperCount} papers selected • Estimated time: 2-3 hours`;
                 
                 // Generate and render results
                 const results = generateResults(searchQuery);

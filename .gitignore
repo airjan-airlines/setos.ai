@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Configuration files
+config.js

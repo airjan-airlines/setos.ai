@@ -1316,24 +1316,28 @@
                  const progressData = JSON.parse(localStorage.getItem('topicProgress') || '{}');
                  const topicProgress = progressData[search.query];
                  
-                                   // Calculate progress - only count unique completed actions
-                  let completedActions = 0;
-                  let totalActions = 0;
-                  let papersStarted = 0;
-                  
-                  if (topicProgress && Object.keys(topicProgress.completedPapers).length > 0) {
-                      papersStarted = Object.keys(topicProgress.completedPapers).length;
-                      totalActions = papersStarted * 4; // 4 actions per paper
-                      
-                      Object.values(topicProgress.completedPapers).forEach(paper => {
-                          if (paper.summary) completedActions++;
-                          if (paper.keyTerms) completedActions++;
-                          if (paper.quiz) completedActions++;
-                          if (paper.read) completedActions++;
-                      });
-                  }
-                  
-                  const progressPercentage = totalActions > 0 ? (completedActions / totalActions) * 100 : 0;
+                 // Calculate progress - always show progress bar
+                 let completedActions = 0;
+                 let totalActions = 0;
+                 let papersStarted = 0;
+                 
+                 if (topicProgress && Object.keys(topicProgress.completedPapers).length > 0) {
+                     papersStarted = Object.keys(topicProgress.completedPapers).length;
+                     totalActions = papersStarted * 4; // 4 actions per paper
+                     
+                     Object.values(topicProgress.completedPapers).forEach(paper => {
+                         if (paper.summary) completedActions++;
+                         if (paper.keyTerms) completedActions++;
+                         if (paper.quiz) completedActions++;
+                         if (paper.read) completedActions++;
+                     });
+                 } else {
+                     // Default to 6 papers (as per search results) with 4 actions each
+                     totalActions = 6 * 4; // 24 total actions
+                     papersStarted = 0;
+                 }
+                 
+                 const progressPercentage = totalActions > 0 ? (completedActions / totalActions) * 100 : 0;
                  
                  const progressHTML = `
                      <div class="progress-container">
@@ -1436,38 +1440,46 @@
                 // Get progress data for this topic
                 const progressData = JSON.parse(localStorage.getItem('topicProgress') || '{}');
                 const topicProgress = progressData[favorite.query];
-                let progressHTML = '';
                 
-                                 if (topicProgress && Object.keys(topicProgress.completedPapers).length > 0) {
-                     // Calculate progress - only count unique completed actions
-                     const totalActions = Object.keys(topicProgress.completedPapers).length * 4; // 4 actions per paper
-                     let completedActions = 0;
-                     
-                     Object.values(topicProgress.completedPapers).forEach(paper => {
-                         if (paper.summary) completedActions++;
-                         if (paper.keyTerms) completedActions++;
-                         if (paper.quiz) completedActions++;
-                         if (paper.read) completedActions++;
-                     });
-                     
-                     const progressPercentage = totalActions > 0 ? (completedActions / totalActions) * 100 : 0;
+                // Calculate progress - always show progress bar
+                let completedActions = 0;
+                let totalActions = 0;
+                let papersStarted = 0;
+                
+                if (topicProgress && Object.keys(topicProgress.completedPapers).length > 0) {
+                    // Calculate progress - only count unique completed actions
+                    totalActions = Object.keys(topicProgress.completedPapers).length * 4; // 4 actions per paper
+                    papersStarted = Object.keys(topicProgress.completedPapers).length;
                     
-                    progressHTML = `
-                        <div class="progress-container">
-                            <div class="progress-header">
-                                <span class="progress-label">Learning Progress</span>
-                                <span class="progress-percentage">${Math.round(progressPercentage)}%</span>
-                            </div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: ${progressPercentage}%"></div>
-                            </div>
-                            <div class="progress-stats">
-                                <span>${completedActions} of ${totalActions} tasks completed</span>
-                                <span>${Object.keys(topicProgress.completedPapers).length} papers started</span>
-                            </div>
-                        </div>
-                    `;
+                    Object.values(topicProgress.completedPapers).forEach(paper => {
+                        if (paper.summary) completedActions++;
+                        if (paper.keyTerms) completedActions++;
+                        if (paper.quiz) completedActions++;
+                        if (paper.read) completedActions++;
+                    });
+                } else {
+                    // Default to 6 papers (as per search results) with 4 actions each
+                    totalActions = 6 * 4; // 24 total actions
+                    papersStarted = 0;
                 }
+                
+                const progressPercentage = totalActions > 0 ? (completedActions / totalActions) * 100 : 0;
+                
+                const progressHTML = `
+                    <div class="progress-container">
+                        <div class="progress-header">
+                            <span class="progress-label">Learning Progress</span>
+                            <span class="progress-percentage">${Math.round(progressPercentage)}%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progressPercentage}%"></div>
+                        </div>
+                        <div class="progress-stats">
+                            <span>${completedActions} of ${totalActions} tasks completed</span>
+                            <span>${papersStarted} papers started</span>
+                        </div>
+                    </div>
+                `;
                 
                 savedTopicItem.innerHTML = `
                     <div class="saved-topic-icon">⭐</div>
@@ -1674,6 +1686,7 @@
             }, 3000);
         }
 
+        // Make this popup a panel on the screen, rather than an alert
         function viewStreakHistory() {
             const streakData = JSON.parse(localStorage.getItem('streakData') || '{}');
             
@@ -1699,7 +1712,7 @@
             alert(message);
         }
 
-        // Paper of the Day Functions
+        // Gets random paper from the database
         function loadPaperOfDay() {
             const papers = [
                 {
