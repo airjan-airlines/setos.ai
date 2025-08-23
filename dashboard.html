@@ -1380,8 +1380,8 @@
                 if (recentItem) {
                     const query = recentItem.getAttribute('data-query');
                     if (query) {
-                        // Redirect to search results page with the query
-                        window.location.href = `search-results.html?search=${encodeURIComponent(query)}`;
+                        // Redirect to search results page with the query and source parameter
+                        window.location.href = `search-results.html?search=${encodeURIComponent(query)}&source=dashboard`;
                     }
                 }
             });
@@ -1500,7 +1500,7 @@
 
         // Function to view a saved topic
         function viewSavedTopic(query) {
-            window.location.href = `search-results.html?search=${encodeURIComponent(query)}`;
+            window.location.href = `search-results.html?search=${encodeURIComponent(query)}&source=dashboard`;
         }
 
         // Function to remove a saved topic

@@ -1007,6 +1007,17 @@
             // Get search query from URL parameters
             const urlParams = new URLSearchParams(window.location.search);
             const searchQuery = urlParams.get('search');
+            const source = urlParams.get('source');
+            
+            // Update return button based on source
+            const returnBtn = document.querySelector('.return-btn');
+            if (source === 'dashboard') {
+                returnBtn.href = 'dashboard.html';
+                returnBtn.textContent = '← Return to Dashboard';
+            } else {
+                returnBtn.href = 'index.html';
+                returnBtn.textContent = '← Return to Search';
+            }
             
             if (searchQuery) {
                 // Update page title and subtitle
