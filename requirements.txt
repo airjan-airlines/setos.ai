@@ -1,0 +1,13 @@
+fastapi~=0.116.1
+uvicorn
+psycopg2-binary~=2.9.10
+sentence-transformers~=5.1.0
+scikit-learn~=1.7.1
+kneed~=0.8.5
+pydantic~=2.11.7
+numpy~=2.2.6
+torch~=2.8.0
+transformers~=4.55.2
+python-dotenv~=1.1.1
+requests~=2.32.4
+wget~=3.2
