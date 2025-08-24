@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from app import roadmap
 from app.models import RoadmapRequest, RoadmapResponse, SummaryResponse, JargonResponse
 from fastapi import HTTPException
+from app import llm
 
 app = FastAPI()
 
@@ -20,7 +21,7 @@ async def get_summary(paper_id: str):
     if not paper:
         raise HTTPException(status_code=404, detail="Paper not found")
 
-    summary = roadmap.generate_summary_for_paper(paper)
+    summary = llm.generate_response(command = "summary", abstract = paper)
     return {"paper_id": paper_id, "summary": summary}
 
 @app.get("/paper/{paper_id}/jargon", response_model=JargonResponse)
@@ -29,5 +30,5 @@ async def get_jargon(paper_id: str):
     if not paper:
         raise HTTPException(status_code=404, detail="Paper not found")
 
-    jargon_list = roadmap.extract_jargon_for_paper(paper)
+    jargon_list = llm.generate_response("jargon", paper)
     return {"paper_id": paper_id, "jargon": jargon_list}
