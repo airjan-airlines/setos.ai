@@ -1295,8 +1295,32 @@
             loadPaperOfDay();
         });
 
+        // Clean up old saved roadmaps (keep only last 20)
+        function cleanupSavedRoadmaps() {
+            const savedRoadmaps = JSON.parse(localStorage.getItem('savedRoadmaps') || '{}');
+            const roadmapKeys = Object.keys(savedRoadmaps);
+            
+            if (roadmapKeys.length > 20) {
+                // Keep only the 20 most recent roadmaps
+                const recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+                const recentQueries = recentSearches.map(search => search.query);
+                
+                // Remove roadmaps that are not in recent searches
+                roadmapKeys.forEach(key => {
+                    if (!recentQueries.includes(key)) {
+                        delete savedRoadmaps[key];
+                    }
+                });
+                
+                localStorage.setItem('savedRoadmaps', JSON.stringify(savedRoadmaps));
+            }
+        }
+
         // Load recent searches from localStorage
         function loadRecentSearches() {
+            // Clean up old roadmaps first
+            cleanupSavedRoadmaps();
+            
             const recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
             
             if (recentSearches.length === 0) {

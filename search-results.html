@@ -69,6 +69,34 @@
             animation: float 25s ease-in-out infinite reverse;
         }
 
+        /* Loading styles */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            font-size: 1.2rem;
+            color: var(--gray);
+            background: var(--card-bg);
+            border-radius: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         @keyframes float {
             0%, 100% { transform: translate(0, 0) scale(1); }
             50% { transform: translate(50px, -50px) scale(1.1); }
@@ -537,8 +565,15 @@
         </div>
         
         <div class="roadmap-header">
-            <h2 class="roadmap-title" id="roadmapTitle">Your Learning Roadmap</h2>
-            <p class="roadmap-subtitle" id="roadmapSubtitle">5 papers selected • Estimated time: 2-3 hours</p>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h2 class="roadmap-title" id="roadmapTitle">Your Learning Roadmap</h2>
+                    <p class="roadmap-subtitle" id="roadmapSubtitle" style="display: none;"></p>
+                </div>
+                <button class="btn-secondary" id="refreshBtn" onclick="refreshRoadmap()" style="display: none;">
+                    🔄 Refresh Roadmap
+                </button>
+            </div>
         </div>
 
         <div class="roadmap-container">
@@ -584,6 +619,7 @@
         </div>
     </footer>
 
+    <script src="api.js"></script>
     <script>
         // Sample data for demonstration
         const sampleResults = [
@@ -607,46 +643,28 @@
             }
         ];
 
-        // Function to generate deterministic results based on search query
-        function generateResults(query) {
-            const topics = ['Machine Learning', 'Data Science', 'Computer Vision', 'Natural Language Processing', 'Robotics', 'Quantum Computing'];
-            const difficulties = ['Beginner', 'Intermediate', 'Advanced'];
-            const results = [];
-
-            // Create a simple hash from the query to make results deterministic
-            let hash = 0;
-            for (let i = 0; i < query.length; i++) {
-                const char = query.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
-                hash = hash & hash; // Convert to 32-bit integer
-            }
-            
-            // Use hash to seed the selection
-            const seed = Math.abs(hash);
-
-            for (let i = 0; i < 6; i++) {
-                const topicIndex = (seed + i * 7) % topics.length;
-                const difficultyIndex = (seed + i * 11) % difficulties.length;
-                const topic = topics[topicIndex];
-                const difficulty = difficulties[difficultyIndex];
+        // Function to generate results from backend API
+        async function generateResults(query) {
+            try {
+                // Show loading state
+                const papersContainer = document.getElementById('papersContainer');
+                papersContainer.innerHTML = '<div class="loading">Generating your learning roadmap...</div>';
                 
-                // Generate deterministic values based on seed and index
-                const yearOffset = (seed + i * 13) % 5;
-                const pageOffset = (seed + i * 17) % 30;
-                const citationOffset = (seed + i * 19) % 2000;
+                // Call the API to generate roadmap
+                const results = await generateRoadmapFromAPI(query);
                 
-                results.push({
-                    title: `${topic} Research Paper ${i + 1}`,
-                    summary: `This paper explores various aspects of ${topic.toLowerCase()} and its applications in modern technology. The research provides valuable insights into current trends and future directions.`,
-                    difficulty: difficulty,
-                    datePublished: (2020 + yearOffset).toString(),
-                    pageNumber: (20 + pageOffset).toString(),
-                    topic: topic,
-                    citations: (100 + citationOffset).toString()
-                });
+                // Update paper count based on actual results
+                const paperCount = results.length;
+                const subtitleElement = document.getElementById('roadmapSubtitle');
+                subtitleElement.textContent = `${paperCount} papers selected`;
+                subtitleElement.style.display = 'block';
+                
+                return results;
+            } catch (error) {
+                console.error('Error generating results:', error);
+                // Fallback to mock results if API fails
+                return generateMockResults(query);
             }
-
-            return results;
         }
 
         // Function to render results
@@ -953,7 +971,7 @@
             // Update the subtitle to show progress
             const subtitle = document.getElementById('roadmapSubtitle');
             const papersCount = document.getElementById('roadmapSubtitle').textContent.split(' ')[0];
-            subtitle.textContent = `${papersCount} papers selected • ${Math.round(progressPercentage)}% completed • Estimated time: 2-3 hours`;
+            subtitle.textContent = `${papersCount} papers selected • ${Math.round(progressPercentage)}% completed`;
         }
 
         // Check authentication and update navigation
@@ -1022,22 +1040,55 @@
             if (searchQuery) {
                 // Update page title and subtitle
                 document.getElementById('roadmapTitle').textContent = `Learning Path: "${searchQuery}"`;
-                // Use deterministic paper count based on search query
-                const paperCount = 6; // Fixed count since we always generate 6 papers
-                document.getElementById('roadmapSubtitle').textContent = `${paperCount} papers selected • Estimated time: 2-3 hours`;
                 
-                // Generate and render results
-                const results = generateResults(searchQuery);
-                renderResults(results);
+                // Check if we have saved roadmap data for this query
+                const savedRoadmaps = JSON.parse(localStorage.getItem('savedRoadmaps') || '{}');
+                const hasSavedRoadmap = savedRoadmaps[searchQuery];
                 
-                // Save to recent searches
-                addRecentSearch(searchQuery, results.length);
-                
+                if (hasSavedRoadmap && source === 'dashboard') {
+                    // Use saved roadmap data when coming from dashboard
+                    console.log('Loading saved roadmap for:', searchQuery);
+                    
+                    // Update subtitle with accurate paper count
+                    const subtitleElement = document.getElementById('roadmapSubtitle');
+                    subtitleElement.textContent = `${hasSavedRoadmap.length} papers selected`;
+                    subtitleElement.style.display = 'block';
+                    
+                    renderResults(hasSavedRoadmap);
+                    
+                    // Show refresh button for saved roadmaps
+                    document.getElementById('refreshBtn').style.display = 'inline-block';
+                    
+                    // Check favorite status
+                    checkFavoriteStatus();
+                    
+                    // Show initial progress
+                    updateProgressDisplay();
+                } else {
+                    // Generate new roadmap only if not coming from dashboard or no saved data
+                    console.log('Generating new roadmap for:', searchQuery);
+                    generateResults(searchQuery).then(results => {
+                        renderResults(results);
+                        
+                        // Save roadmap data for future use
+                        savedRoadmaps[searchQuery] = results;
+                        localStorage.setItem('savedRoadmaps', JSON.stringify(savedRoadmaps));
+                        
+                        // Save to recent searches
+                        addRecentSearch(searchQuery, results.length);
+                        
                         // Check favorite status
-        checkFavoriteStatus();
-        
-        // Show initial progress
-        updateProgressDisplay();
+                        checkFavoriteStatus();
+                        
+                        // Show initial progress
+                        updateProgressDisplay();
+                    }).catch(error => {
+                        console.error('Error generating results:', error);
+                        // Show error message
+                        const papersContainer = document.getElementById('papersContainer');
+                        papersContainer.innerHTML = '<div class="loading">Error generating roadmap. Please try again.</div>';
+                    });
+                }
         
         // Add celebration animations to CSS
         const style = document.createElement('style');
@@ -1055,7 +1106,9 @@
             } else {
                 // Default content
                 document.getElementById('roadmapTitle').textContent = 'Learning Path';
-                document.getElementById('roadmapSubtitle').textContent = '5 papers selected • Estimated time: 2-3 hours';
+                const subtitleElement = document.getElementById('roadmapSubtitle');
+                subtitleElement.textContent = `${sampleResults.length} papers selected`;
+                subtitleElement.style.display = 'block';
                 renderResults(sampleResults);
             }
         });
@@ -1170,6 +1223,62 @@
                  starBtn.classList.add('favorited');
                  starBtn.innerHTML = '<span class="star-icon">★</span> Saved';
              }
+        }
+
+        // Function to refresh roadmap (regenerate from API)
+        function refreshRoadmap() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchQuery = urlParams.get('search');
+            
+            if (!searchQuery) return;
+            
+            // Remove saved roadmap data to force regeneration
+            const savedRoadmaps = JSON.parse(localStorage.getItem('savedRoadmaps') || '{}');
+            delete savedRoadmaps[searchQuery];
+            localStorage.setItem('savedRoadmaps', JSON.stringify(savedRoadmaps));
+            
+            // Hide refresh button during regeneration
+            document.getElementById('refreshBtn').style.display = 'none';
+            
+            // Generate new roadmap
+            generateResults(searchQuery).then(results => {
+                // Update subtitle with accurate paper count
+                const subtitleElement = document.getElementById('roadmapSubtitle');
+                subtitleElement.textContent = `${results.length} papers selected`;
+                subtitleElement.style.display = 'block';
+                
+                renderResults(results);
+                
+                // Save new roadmap data
+                savedRoadmaps[searchQuery] = results;
+                localStorage.setItem('savedRoadmaps', JSON.stringify(savedRoadmaps));
+                
+                // Check favorite status
+                checkFavoriteStatus();
+                
+                // Show initial progress
+                updateProgressDisplay();
+                
+                // Show success message
+                const papersContainer = document.getElementById('papersContainer');
+                const successMessage = document.createElement('div');
+                successMessage.className = 'loading';
+                successMessage.style.color = 'var(--success)';
+                successMessage.textContent = 'Roadmap refreshed successfully!';
+                papersContainer.insertBefore(successMessage, papersContainer.firstChild);
+                
+                // Remove success message after 3 seconds
+                setTimeout(() => {
+                    if (successMessage.parentNode) {
+                        successMessage.remove();
+                    }
+                }, 3000);
+            }).catch(error => {
+                console.error('Error refreshing roadmap:', error);
+                // Show error message
+                const papersContainer = document.getElementById('papersContainer');
+                papersContainer.innerHTML = '<div class="loading">Error refreshing roadmap. Please try again.</div>';
+            });
         }
     </script>
 </body>

@@ -19,8 +19,28 @@ DB_CONFIG = {
 }
 
 def get_db_connection():
-    conn = psycopg2.connect(**DB_CONFIG)
-    return conn
+    try:
+        # Try with IPv4 preference
+        conn = psycopg2.connect(**DB_CONFIG)
+        return conn
+    except Exception as e:
+        print(f"Database connection error: {e}")
+        # Try alternative connection method
+        try:
+            # Force IPv4 by using the IP address directly
+            import socket
+            host = os.getenv("DB_HOST")
+            try:
+                ip = socket.gethostbyname(host)
+                alt_config = DB_CONFIG.copy()
+                alt_config["host"] = ip
+                conn = psycopg2.connect(**alt_config)
+                return conn
+            except socket.gaierror:
+                raise e
+        except Exception as e2:
+            print(f"Alternative connection also failed: {e2}")
+            raise e
 
 def create_papers_table():
     conn = get_db_connection()

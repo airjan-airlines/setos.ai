@@ -1,9 +1,11 @@
-from idlelib import query
-
-from google import genai
+import google.generativeai as genai
 import os
+from dotenv import load_dotenv
 
-GEMINI_API_KEY = os.getenv("gemini_key")
+# Load environment variables from .env file
+load_dotenv()
+
+GEMINI_API_KEY = os.getenv("gemini_key") or os.getenv("GOOGLE_API_KEY")
 
 jargon_prompt = """
 You are a technical writing assistant specializing in making complex academic papers accessible to broader audiences. Your task is to analyze the provided abstract and create a comprehensive glossary of technical terms.
@@ -59,32 +61,31 @@ TLDR: [1-2 clear, jargon-free sentences explaining what was done and why it matt
 '''
 
 instruction_dict = {"jargon" : jargon_prompt, "summary" : summarize_prompt}
-client = genai.Client(api_key=GEMINI_API_KEY)
 
 def generate_response(command, abstract):
+    # Configure the API each time to ensure it's loaded
+    if GEMINI_API_KEY:
+        genai.configure(api_key=GEMINI_API_KEY)
+    else:
+        return "API key not configured. Please set the gemini_key environment variable."
     # Create a GenerationConfig and set safety settings
     try:
-        response = client.models.generate_content(
-            model="gemini-2.5-flash", contents=instruction_dict[command] + abstract
-        )
+        model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        response = model.generate_content(instruction_dict[command] + abstract)
         return response.text
     except Exception as e1:
         print(f"First model attempt failed: {e1}")
         try:
-            # Fall back to gemini-1.0-pro if the first one fails
-            response = client.models.generate_content(
-                model="gemini-1.5-pro", contents=instruction_dict[command] + abstract
-            )
-            return response.text
-            print('ai responded')
+            # Fall back to gemini-1.5-pro if the first one fails
+            model = genai.GenerativeModel('gemini-1.5-pro')
+            response = model.generate_content(instruction_dict[command] + abstract)
             return response.text
         except Exception as e2:
             print(f"Second model attempt failed: {e2}")
             try:
                 # As a last resort, try with a simpler model
-                response = client.models.generate_content(
-                    model="gemini-1.0-pro", contents=instruction_dict[command] + abstract
-                )
+                model = genai.GenerativeModel('gemini-1.0-pro')
+                response = model.generate_content(instruction_dict[command] + abstract)
                 return response.text
             except Exception as e3:
                 print(f"All model attempts failed: {e3}")

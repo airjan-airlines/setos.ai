@@ -774,7 +774,7 @@
                     };
 
                     // Make API call
-                    const response = await fetch('/api/login', {
+                    const response = await fetch('http://localhost:8000/api/login', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -834,7 +834,7 @@
 
         async function resendVerification(email) {
             try {
-                const response = await fetch('/api/resend-verification', {
+                const response = await fetch('http://localhost:8000/api/resend-verification', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
