@@ -3,16 +3,35 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const path = require('path');
+const { createProxyMiddleware } = require('http-proxy-middleware');
 const { initializeDatabase, userOperations } = require('./database');
 const { generateVerificationToken, sendVerificationEmail } = require('./emailService');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const BACKEND_PORT = process.env.BACKEND_PORT || 8000;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.static('.'));
+
+// Proxy API calls to Python backend
+app.use('/api/roadmap', createProxyMiddleware({
+    target: `http://localhost:${BACKEND_PORT}`,
+    changeOrigin: true,
+    pathRewrite: {
+        '^/api/roadmap': '/roadmap'
+    }
+}));
+
+app.use('/api/paper', createProxyMiddleware({
+    target: `http://localhost:${BACKEND_PORT}`,
+    changeOrigin: true,
+    pathRewrite: {
+        '^/api/paper': '/paper'
+    }
+}));
 
 // JWT secret (in production, use environment variable)
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';

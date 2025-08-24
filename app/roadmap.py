@@ -7,10 +7,22 @@ from transformers import AutoTokenizer, AutoModel
 import torch
 
 model_name = "allenai/scibert_scivocab_uncased"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModel.from_pretrained(model_name)
+_tokenizer = None
+_model = None
+
+def _load_model():
+    """Lazy load the model and tokenizer"""
+    global _tokenizer, _model
+    if _tokenizer is None:
+        _tokenizer = AutoTokenizer.from_pretrained(model_name)
+    if _model is None:
+        _model = AutoModel.from_pretrained(model_name)
+    return _tokenizer, _model
 
 def get_query_embedding(query: str):
+    # Load model lazily
+    tokenizer, model = _load_model()
+    
     # Tokenize query
     inputs = tokenizer(
         [query],
