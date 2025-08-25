@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
-GEMINI_API_KEY = os.getenv("gemini_key") or os.getenv("GOOGLE_API_KEY")
+GEMINI_API_KEY = os.getenv("gemini_key") or os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_KEY")
 
 jargon_prompt = """
 You are a technical writing assistant specializing in making complex academic papers accessible to broader audiences. Your task is to analyze the provided abstract and create a comprehensive glossary of technical terms.
@@ -66,8 +66,10 @@ def generate_response(command, abstract):
     # Configure the API each time to ensure it's loaded
     if GEMINI_API_KEY:
         genai.configure(api_key=GEMINI_API_KEY)
+        print(f"API key found: {GEMINI_API_KEY[:10]}...")
     else:
         return "API key not configured. Please set the gemini_key environment variable."
+    
     # Create a GenerationConfig and set safety settings
     try:
         model = genai.GenerativeModel('gemini-2.0-flash-exp')
@@ -75,6 +77,8 @@ def generate_response(command, abstract):
         return response.text
     except Exception as e1:
         print(f"First model attempt failed: {e1}")
+        if "quota" in str(e1).lower() or "limit" in str(e1).lower():
+            return "API quota exceeded. Please check your Gemini API usage limits."
         try:
             # Fall back to gemini-1.5-pro if the first one fails
             model = genai.GenerativeModel('gemini-1.5-pro')
@@ -82,6 +86,8 @@ def generate_response(command, abstract):
             return response.text
         except Exception as e2:
             print(f"Second model attempt failed: {e2}")
+            if "quota" in str(e2).lower() or "limit" in str(e2).lower():
+                return "API quota exceeded. Please check your Gemini API usage limits."
             try:
                 # As a last resort, try with a simpler model
                 model = genai.GenerativeModel('gemini-1.0-pro')
@@ -89,4 +95,6 @@ def generate_response(command, abstract):
                 return response.text
             except Exception as e3:
                 print(f"All model attempts failed: {e3}")
+                if "quota" in str(e3).lower() or "limit" in str(e3).lower():
+                    return "API quota exceeded. Please check your Gemini API usage limits."
                 return "AI response generation failed. Please check your API key and available models."

@@ -621,27 +621,7 @@
 
     <script src="api.js"></script>
     <script>
-        // Sample data for demonstration
-        const sampleResults = [
-            {
-                title: "Introduction to Machine Learning Fundamentals",
-                summary: "A comprehensive overview of machine learning concepts, algorithms, and applications. This paper covers the foundational principles that every ML practitioner should understand.",
-                difficulty: "Beginner",
-                datePublished: "2023",
-                pageNumber: "45",
-                topic: "Machine Learning",
-                citations: "1,234"
-            },
-            {
-                title: "Advanced Neural Network Architectures",
-                summary: "An in-depth exploration of modern neural network designs, including transformers, attention mechanisms, and their applications in natural language processing.",
-                difficulty: "Intermediate",
-                datePublished: "2024",
-                pageNumber: "32",
-                topic: "Deep Learning",
-                citations: "856"
-            }
-        ];
+
 
         // Function to generate results from backend API
         async function generateResults(query) {
@@ -653,6 +633,12 @@
                 // Call the API to generate roadmap
                 const results = await generateRoadmapFromAPI(query);
                 
+                // Check if we got any results
+                if (!results || results.length === 0) {
+                    papersContainer.innerHTML = '<div class="loading">No papers found for this query. Please try a different search term.</div>';
+                    return [];
+                }
+                
                 // Update paper count based on actual results
                 const paperCount = results.length;
                 const subtitleElement = document.getElementById('roadmapSubtitle');
@@ -662,8 +648,9 @@
                 return results;
             } catch (error) {
                 console.error('Error generating results:', error);
-                // Fallback to mock results if API fails
-                return generateMockResults(query);
+                const papersContainer = document.getElementById('papersContainer');
+                papersContainer.innerHTML = '<div class="loading">No papers found for this query. Please try a different search term.</div>';
+                return [];
             }
         }
 
@@ -1086,7 +1073,7 @@
                         console.error('Error generating results:', error);
                         // Show error message
                         const papersContainer = document.getElementById('papersContainer');
-                        papersContainer.innerHTML = '<div class="loading">Error generating roadmap. Please try again.</div>';
+                        papersContainer.innerHTML = '<div class="loading">No papers found for this query. Please try a different search term.</div>';
                     });
                 }
         
@@ -1104,12 +1091,10 @@
         `;
         document.head.appendChild(style);
             } else {
-                // Default content
+                // No search query provided
                 document.getElementById('roadmapTitle').textContent = 'Learning Path';
-                const subtitleElement = document.getElementById('roadmapSubtitle');
-                subtitleElement.textContent = `${sampleResults.length} papers selected`;
-                subtitleElement.style.display = 'block';
-                renderResults(sampleResults);
+                const papersContainer = document.getElementById('papersContainer');
+                papersContainer.innerHTML = '<div class="loading">Please enter a search query to generate a learning roadmap.</div>';
             }
         });
 
@@ -1277,7 +1262,7 @@
                 console.error('Error refreshing roadmap:', error);
                 // Show error message
                 const papersContainer = document.getElementById('papersContainer');
-                papersContainer.innerHTML = '<div class="loading">Error refreshing roadmap. Please try again.</div>';
+                papersContainer.innerHTML = '<div class="loading">No papers found for this query. Please try a different search term.</div>';
             });
         }
     </script>

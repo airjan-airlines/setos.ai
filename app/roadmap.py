@@ -51,20 +51,49 @@ def get_query_embedding(query: str):
         return mean_pooled.squeeze().cpu().numpy()
     except Exception as e:
         print(f"Error loading embedding model: {e}")
+        print("Using fallback embedding method...")
         # Return a simple hash-based embedding as fallback
+        # Create a 768-dimensional embedding (matching the model output)
         import hashlib
         hash_obj = hashlib.md5(query.encode())
-        return [float(x) / 255.0 for x in hash_obj.digest()[:16]]
+        hash_bytes = hash_obj.digest()
+        
+        # Create a 768-dimensional array by repeating and scaling the hash
+        embedding = []
+        for i in range(768):
+            byte_index = i % len(hash_bytes)
+            embedding.append(float(hash_bytes[byte_index]) / 255.0)
+        
+        return np.array(embedding)
 
 # This function now returns a list of tuples, where each tuple is (Paper, similarity_score)
 def find_similar_papers(query_embedding: np.ndarray, candidate_pool_size: int = 200):
     try:
+        print(f"Attempting to connect to database...")
         conn = database.get_db_connection()
         cur = conn.cursor()
+        print(f"Database connection successful")
+
+        # First, let's check if we have any papers at all
+        cur.execute("SELECT COUNT(*) FROM papers")
+        total_papers = cur.fetchone()[0]
+        print(f"Total papers in database: {total_papers}")
+
+        # Check if we have any papers with embeddings
+        cur.execute("SELECT COUNT(*) FROM papers WHERE embedding IS NOT NULL")
+        papers_with_embeddings = cur.fetchone()[0]
+        print(f"Papers with embeddings: {papers_with_embeddings}")
+
+        if papers_with_embeddings == 0:
+            print("No papers with embeddings found in database")
+            cur.close()
+            conn.close()
+            return []
 
         # The <-> operator gives us cosine distance (0=identical, 2=opposite)
         # We calculate 1 - (distance / 2) to get similarity (1=identical, 0=opposite)
         # and select it as the "similarity" column.
+        print(f"Searching for papers with query embedding...")
         cur.execute("""
             SELECT
                 (1 - (embedding <-> %s :: vector) / 2) as similarity,
@@ -77,10 +106,12 @@ def find_similar_papers(query_embedding: np.ndarray, candidate_pool_size: int = 
         """, (query_embedding.tolist(), candidate_pool_size))
 
         papers_data = cur.fetchall()
+        print(f"Found {len(papers_data)} papers matching query")
         cur.close()
         conn.close()
 
         if not papers_data:
+            print("No papers found matching the query")
             return []
 
         similar_papers_with_scores = []
@@ -100,6 +131,7 @@ def find_similar_papers(query_embedding: np.ndarray, candidate_pool_size: int = 
             similarity_score = row[0]
             similar_papers_with_scores.append((paper, similarity_score))
 
+        print(f"Returning {len(similar_papers_with_scores)} papers with scores")
         return similar_papers_with_scores
     except Exception as e:
         print(f"Database error: {e}")
@@ -109,42 +141,7 @@ def sequence_papers(papers: list[Paper]):
     # Sequence by year (ascending), then by citation count (descending)
     return sorted(papers, key=lambda p: (p.year or 0, p.citation_count or 0), reverse=False)
 
-def generate_mock_roadmap(query: str):
-    """Generate a mock roadmap when database/embedding is not available"""
-    from .models import Paper
-    
-    # Create mock papers based on the query
-    mock_papers = []
-    topics = ['Machine Learning', 'Data Science', 'Computer Vision', 'Natural Language Processing', 'Robotics', 'Deep Learning']
-    
-    for i in range(6):
-        topic = topics[i % len(topics)]
-        mock_paper = Paper(
-            paper_id=f"mock-{i}",
-            title=f"{topic} Research Paper {i+1}: {query.title()}",
-            abstract=f"This paper explores various aspects of {topic.lower()} related to {query}. The research provides valuable insights into current trends and future directions in the field.",
-            authors=[f"Author {i+1}", f"Co-Author {i+1}"],
-            year=2020 + (i % 5),
-            url=f"https://example.com/paper-{i}",
-            fields_of_study=[topic],
-            citation_count=100 + (i * 50),
-            reference_count=25 + (i * 5),
-            influential_citation_count=10 + (i * 2)
-        )
-        mock_papers.append(mock_paper)
-    
-    # Generate roadmap with learning aids
-    roadmap = []
-    for paper in mock_papers:
-        summary, vocabulary, quiz = generate_learning_aids(paper)
-        roadmap.append({
-            "paper": paper,
-            "summary": summary,
-            "vocabulary": vocabulary,
-            "quiz": quiz
-        })
-    
-    return roadmap
+
 
 def generate_learning_aids(paper: Paper):
     try:
@@ -186,49 +183,60 @@ def generate_learning_aids(paper: Paper):
         return summary, vocabulary, quiz
 
 def generate_roadmap(query: str):
+    print(f"Generating roadmap for query: '{query}'")
     try:
+        print("Getting query embedding...")
         query_embedding = get_query_embedding(query)
+        print(f"Query embedding generated, length: {len(query_embedding)}")
+        
         # 1. Get a large candidate pool from the database
+        print("Searching for similar papers...")
         candidate_papers_with_scores = find_similar_papers(query_embedding)
+        
         if not candidate_papers_with_scores:
-            print("No papers found in database, using mock data")
-            return generate_mock_roadmap(query)
+            print("No papers found in database")
+            return []
+            
+        print(f"Found {len(candidate_papers_with_scores)} candidate papers")
+        
+        # Unzip the papers and their scores into separate lists
+        candidate_papers, similarities = zip(*candidate_papers_with_scores)
+
+        # 2. Find the "knee" to determine the optimal number of papers
+        if len(candidate_papers) < 2:
+            knee_point = len(candidate_papers)
+        else:
+            # Note: kneed expects x and y values for the curve
+            x_values = range(len(candidate_papers))
+            y_values = sorted(similarities, reverse=True) # Ensure similarities are decreasing
+            kneedle = KneeLocator(x_values, y_values, curve='convex', direction='decreasing')
+            knee_point = kneedle.knee or len(candidate_papers)
+
+        # 3. Select the papers up to the knee point
+        final_papers = candidate_papers[:knee_point]
+
+        # 4. Sequence the final, smaller list of papers by year and citation count
+        sequenced_papers = sequence_papers(list(final_papers))
+
+        # 5. Generate the final roadmap with learning aids
+        roadmap = []
+        for paper in sequenced_papers:
+            summary, vocabulary, quiz = generate_learning_aids(paper)
+            roadmap.append({
+                "paper": paper,
+                "summary": summary,
+                "vocabulary": vocabulary,
+                "quiz": quiz
+            })
+
+        print(f"Generated roadmap with {len(roadmap)} papers")
+        return roadmap
+        
     except Exception as e:
         print(f"Error with embedding/database: {e}")
-        # Return mock roadmap if database/embedding fails
-        return generate_mock_roadmap(query)
+        return []
+        
 
-    # Unzip the papers and their scores into separate lists
-    candidate_papers, similarities = zip(*candidate_papers_with_scores)
-
-    # 2. Find the "knee" to determine the optimal number of papers
-    if len(candidate_papers) < 2:
-        knee_point = len(candidate_papers)
-    else:
-        # Note: kneed expects x and y values for the curve
-        x_values = range(len(candidate_papers))
-        y_values = sorted(similarities, reverse=True) # Ensure similarities are decreasing
-        kneedle = KneeLocator(x_values, y_values, curve='convex', direction='decreasing')
-        knee_point = kneedle.knee or len(candidate_papers)
-
-    # 3. Select the papers up to the knee point
-    final_papers = candidate_papers[:knee_point]
-
-    # 4. Sequence the final, smaller list of papers by year and citation count
-    sequenced_papers = sequence_papers(list(final_papers))
-
-    # 5. Generate the final roadmap with learning aids
-    roadmap = []
-    for paper in sequenced_papers:
-        summary, vocabulary, quiz = generate_learning_aids(paper)
-        roadmap.append({
-            "paper": paper,
-            "summary": summary,
-            "vocabulary": vocabulary,
-            "quiz": quiz
-        })
-
-    return roadmap
 
 def get_paper_by_id(paper_id: str) -> Paper:
     conn = database.get_db_connection()

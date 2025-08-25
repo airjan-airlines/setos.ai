@@ -105,8 +105,7 @@ async function generateRoadmapFromAPI(query) {
         return [];
     } catch (error) {
         console.error('Error generating roadmap:', error);
-        // Fallback to mock data if API fails
-        return generateMockResults(query);
+        return [];
     }
 }
 
@@ -118,56 +117,9 @@ function getDifficultyFromCitations(citationCount) {
     return 'Beginner';
 }
 
-// Fallback function to generate mock results
-function generateMockResults(query) {
-    const topics = ['Machine Learning', 'Data Science', 'Computer Vision', 'Natural Language Processing', 'Robotics', 'Quantum Computing'];
-    const difficulties = ['Beginner', 'Intermediate', 'Advanced'];
-    const results = [];
 
-    // Create a simple hash from the query to make results deterministic
-    let hash = 0;
-    for (let i = 0; i < query.length; i++) {
-        const char = query.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash; // Convert to 32-bit integer
-    }
-    
-    // Use hash to seed the selection
-    const seed = Math.abs(hash);
-
-    for (let i = 0; i < 6; i++) {
-        const topicIndex = (seed + i * 7) % topics.length;
-        const difficultyIndex = (seed + i * 11) % difficulties.length;
-        const topic = topics[topicIndex];
-        const difficulty = difficulties[difficultyIndex];
-        
-        // Generate deterministic values based on seed and index
-        const yearOffset = (seed + i * 13) % 5;
-        const pageOffset = (seed + i * 17) % 30;
-        const citationOffset = (seed + i * 19) % 2000;
-        
-        results.push({
-            title: `${topic} Research Paper ${i + 1}`,
-            summary: `This paper explores various aspects of ${topic.toLowerCase()} and its applications in modern technology. The research provides valuable insights into current trends and future directions.`,
-            difficulty: difficulty,
-            datePublished: (2020 + yearOffset).toString(),
-            pageNumber: (20 + pageOffset).toString(),
-            topic: topic,
-            citations: (100 + citationOffset).toString(),
-            paperId: `mock-paper-${i}`,
-            authors: ['Research Team'],
-            abstract: `This is a mock abstract for ${topic} research paper ${i + 1}.`,
-            url: '#',
-            vocabulary: ['Key Concept 1', 'Key Concept 2', 'Key Concept 3'],
-            quiz: ['What is the main topic?', 'What are the key findings?', 'How is this research significant?']
-        });
-    }
-
-    return results;
-}
 
 // Export functions for use in other files
 window.ApiService = ApiService;
 window.apiService = apiService;
 window.generateRoadmapFromAPI = generateRoadmapFromAPI;
-window.generateMockResults = generateMockResults;

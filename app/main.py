@@ -104,6 +104,10 @@ def read_root():
 def health_check():
     return {"status": "healthy", "message": "Backend is running"}
 
+@app.get("/test")
+def test_endpoint():
+    return {"message": "Test endpoint working"}
+
 # Import roadmap module only when needed to avoid startup issues
 def get_roadmap_module():
     try:
