@@ -13,13 +13,18 @@ export default function App() {
     setError("");
     setResults(null);
     try {
-      const res = await fetch(
-        `https://dummyjson.com/posts/search?q=${encodeURIComponent(query)}`
-      );
+      const res = await fetch(`/api/roadmap`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query }),
+      });
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
       const data = await res.json();
-      setResults(data);
+      setResults(data.roadmap);
     } catch (err) {
-      setError("placeholder api request failed");
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -106,26 +111,22 @@ export default function App() {
         </div>
       </section>
 
-      {/* placeholder results */}
+      {/* Results */}
       <section className="max-w-6xl mx-auto px-4 mt-10 mb-20">
         {error && (
           <div className="bg-red-500/10 border border-red-500/30 text-red-200 p-4 rounded-xl">{error}</div>
         )}
 
         {results && (
-          <div className="bg-white/5 border border-white/10 p-5 rounded-2xl">
-            <h3 className="font-semibold mb-2">Placeholder Results</h3>
-            <p className="text-sm text-white/70 mb-4">
-              {`Fetched ${results?.total ?? 0} items from the placeholder API for "${query}".`}
-            </p>
-            <ul className="space-y-2">
-              {(results.posts || []).slice(0, 5).map((p) => (
-                <li key={p.id} className="p-3 rounded-lg bg-black/30 border border-white/10">
-                  <div className="text-sm opacity-80">Post #{p.id}</div>
-                  <div className="font-medium">{p.title}</div>
-                </li>
-              ))}
-            </ul>
+          <div className="space-y-4">
+            {results.map((item, index) => (
+              <div key={index} className="bg-white/5 border border-white/10 p-5 rounded-2xl">
+                <h3 className="font-semibold text-lg">{item.paper.title}</h3>
+                <p className="text-sm text-white/70">{item.paper.authors.join(', ')} - {item.paper.year}</p>
+                <p className="mt-2 text-white/90">{item.summary}</p>
+                <a href={item.paper.url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline mt-2 inline-block">Read Paper</a>
+              </div>
+            ))}
           </div>
         )}
       </section>

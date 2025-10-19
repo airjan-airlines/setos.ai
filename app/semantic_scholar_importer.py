@@ -5,6 +5,7 @@ import json
 import requests
 import psycopg2
 from psycopg2.extras import execute_values
+import random
 
 # --------------------------- 
 # CONFIGURATION
@@ -23,6 +24,262 @@ SEARCH_QUERIES = [
     "supply chain resilience post-pandemic",
     "Roman Empire trade routes",
     "dark matter detection experiments"
+]
+
+queries = [
+    # STEM - Computer Science & AI
+    "artificial intelligence",
+    "machine learning",
+    "deep learning",
+    "natural language processing",
+    "computer vision",
+    "reinforcement learning",
+    "robotics",
+    "human-computer interaction",
+    "computer graphics",
+    "quantum computing",
+
+    # STEM - Mathematics & Statistics
+    "algebra",
+    "calculus",
+    "probability theory",
+    "statistics",
+    "number theory",
+    "geometry",
+    "topology",
+    "mathematical modeling",
+    "applied mathematics",
+    "game theory",
+
+    # STEM - Physics
+    "quantum mechanics",
+    "relativity",
+    "astrophysics",
+    "nuclear physics",
+    "particle physics",
+    "thermodynamics",
+    "statistical mechanics",
+    "optics",
+    "plasma physics",
+    "condensed matter physics",
+
+    # STEM - Chemistry
+    "organic chemistry",
+    "inorganic chemistry",
+    "physical chemistry",
+    "analytical chemistry",
+    "biochemistry",
+    "polymer chemistry",
+    "theoretical chemistry",
+    "green chemistry",
+    "materials chemistry",
+    "nanochemistry",
+
+    # STEM - Biology
+    "genetics",
+    "molecular biology",
+    "evolutionary biology",
+    "ecology",
+    "cell biology",
+    "microbiology",
+    "immunology",
+    "neuroscience",
+    "developmental biology",
+    "synthetic biology",
+
+    # STEM - Engineering
+    "electrical engineering",
+    "mechanical engineering",
+    "civil engineering",
+    "aerospace engineering",
+    "chemical engineering",
+    "biomedical engineering",
+    "materials engineering",
+    "industrial engineering",
+    "nuclear engineering",
+    "systems engineering",
+
+    # Social Sciences
+    "psychology",
+    "cognitive science",
+    "sociology",
+    "anthropology",
+    "political science",
+    "economics",
+    "international relations",
+    "education",
+    "law",
+    "criminology",
+
+    # Humanities
+    "history",
+    "philosophy",
+    "literature",
+    "linguistics",
+    "religious studies",
+    "art history",
+    "musicology",
+    "classics",
+    "cultural studies",
+    "ethics",
+
+    # Interdisciplinary / Applied
+    "environmental science",
+    "climate change",
+    "public health",
+    "epidemiology",
+    "bioinformatics",
+    "genomics",
+    "health policy",
+    "urban studies",
+    "media studies",
+    "communication studies",
+
+    # Emerging & Broad Impact Fields
+    "artificial general intelligence",
+    "cybersecurity",
+    "blockchain",
+    "internet of things",
+    "data science",
+    "precision medicine",
+    "space exploration",
+    "renewable energy",
+    "nanotechnology",
+    "social media studies"
+]
+
+extra_queries = [
+    # Methods & Tools
+    "Bayesian inference",
+    "Monte Carlo simulation",
+    "finite element analysis",
+    "agent-based modeling",
+    "network analysis",
+    "computational complexity",
+    "data visualization",
+    "survey methodology",
+    "ethnography",
+    "randomized controlled trials",
+
+    # Computer Science / AI Subfields
+    "federated learning",
+    "multimodal machine learning",
+    "knowledge graphs",
+    "explainable AI",
+    "adversarial machine learning",
+    "AI in healthcare",
+    "AI for drug discovery",
+    "neuromorphic computing",
+    "edge computing",
+    "quantum machine learning",
+
+    # Mathematics & Statistics Subfields
+    "linear algebra",
+    "differential equations",
+    "dynamical systems",
+    "fractal geometry",
+    "stochastic processes",
+    "operations research",
+    "optimization theory",
+    "statistical learning",
+    "information theory",
+    "category theory",
+
+    # Physics Subfields
+    "string theory",
+    "gravitational waves",
+    "cosmology",
+    "quantum field theory",
+    "superconductivity",
+    "fluid dynamics",
+    "biophysics",
+    "accelerator physics",
+    "chaos theory",
+    "nonlinear dynamics",
+
+    # Chemistry Subfields
+    "supramolecular chemistry",
+    "catalysis",
+    "photochemistry",
+    "electrochemistry",
+    "medicinal chemistry",
+    "computational chemistry",
+    "chemical engineering materials",
+    "spectroscopy",
+    "surface chemistry",
+    "crystallography",
+
+    # Biology & Medicine Subfields
+    "cancer genomics",
+    "stem cell biology",
+    "epigenetics",
+    "proteomics",
+    "metabolomics",
+    "microbiome research",
+    "structural biology",
+    "aging biology",
+    "neurodegenerative diseases",
+    "gene therapy",
+
+    # Engineering & Technology Subfields
+    "control systems",
+    "signal processing",
+    "renewable energy engineering",
+    "biomedical imaging",
+    "tissue engineering",
+    "nanomaterials",
+    "additive manufacturing",
+    "photonics",
+    "microelectronics",
+    "environmental engineering",
+
+    # Psychology & Cognitive Science Subfields
+    "developmental psychology",
+    "social psychology",
+    "educational psychology",
+    "decision-making",
+    "behavioral neuroscience",
+    "affective science",
+    "psycholinguistics",
+    "memory research",
+    "consciousness studies",
+    "computational psychiatry",
+
+    # Social Sciences / Policy
+    "migration studies",
+    "gender studies",
+    "social network analysis",
+    "comparative politics",
+    "public administration",
+    "conflict resolution",
+    "global governance",
+    "economic history",
+    "labor economics",
+    "health economics",
+
+    # Humanities Extensions
+    "digital humanities",
+    "media archaeology",
+    "critical theory",
+    "comparative literature",
+    "semiotics",
+    "philosophy of science",
+    "metaphysics",
+    "epistemology",
+    "political philosophy",
+    "aesthetics",
+
+    # Interdisciplinary / Global Challenges
+    "pandemic preparedness",
+    "food security",
+    "water resources management",
+    "sustainable agriculture",
+    "biodiversity conservation",
+    "renewable energy storage",
+    "disaster risk reduction",
+    "artificial ecosystems",
+    "urban resilience",
+    "planetary health"
 ]
 
 # The fields to retrieve from the Semantic Scholar API
@@ -53,25 +310,7 @@ def setup_database():
     print("Setting up database...")
     conn = psycopg2.connect(**DB_CONFIG)
     cur = conn.cursor()
-    
-    # This schema is based on the user's SELECT query
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS papers (
-            paper_id TEXT PRIMARY KEY,
-            title TEXT,
-            abstract TEXT,
-            authors TEXT[],
-            year INT,
-            url TEXT,
-            fields_of_study TEXT[],
-            embedding TEXT,
-            citation_count INT,
-            reference_count INT,
-            influential_citation_count INT
-        );
-    """)
-    conn.commit()
-    print("Database setup complete.")
+
     return conn
 
 # --------------------------- 
@@ -192,8 +431,9 @@ if __name__ == "__main__":
     try:
         db_connection = setup_database()
         total_inserted = 0
-        
-        for query in SEARCH_QUERIES:
+
+        random.shuffle(extra_queries)
+        for query in extra_queries:
             print(f"\n{'='*50}")
             print(f"Processing query: '{query}'")
             print(f"{ '='*50}\n")

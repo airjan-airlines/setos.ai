@@ -10,7 +10,7 @@ from psycopg2.extras import execute_values
 # CONFIGURATION
 # ---------------------------
 
-LOCAL_PATH = "./semantic_scholar_db"
+LOCAL_PATH = "/Users/arjundesikan/Documents/semantic_scholar_db"
 
 from dotenv import load_dotenv
 import os

@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "backend": "python -m uvicorn app.main:app --reload --port 8000",
+    "backend": "python3 -m uvicorn app.main:app --reload --port 8000",
     "frontend": "nodemon server.js",
     "dev:full": "concurrently \"npm run backend\" \"npm run frontend\"",
     "start:full": "node start.js",

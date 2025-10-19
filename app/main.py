@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from app import llm
@@ -12,6 +12,11 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
 from typing import Optional
+from supabase import Client
+
+from app import roadmap
+from app.models import RoadmapRequest, RoadmapResponse, SummaryResponse, JargonResponse
+from . import database
 
 app = FastAPI()
 
@@ -25,9 +30,6 @@ app.add_middleware(
 )
 
 # Request models
-class RoadmapRequest(BaseModel):
-    query: str
-
 class LoginRequest(BaseModel):
     email: str
     password: str
@@ -45,7 +47,7 @@ class ResendVerificationRequest(BaseModel):
 # Email configuration
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
-EMAIL_USER = os.getenv("EMAIL_USER", "your-email@gmail.com")  # Set this in .env
+EMAIL_USER = os.getenv("EMAIL_USER", "your-email @gmail.com")  # Set this in .env
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD", "your-app-password")  # Set this in .env
 
 # Store verification codes (in production, use a database)
@@ -96,175 +98,128 @@ def send_verification_email(email: str, code: str):
         print(f"Email sending error: {e}")
         return False
 
-@app.get("/")
+@app.get("/api/")
 def read_root():
     return {"message": "Paper Roadmap API is running"}
 
-@app.get("/health")
+@app.get("/api/health")
 def health_check():
     return {"status": "healthy", "message": "Backend is running"}
 
-@app.get("/test")
+@app.get("/api/test")
 def test_endpoint():
     return {"message": "Test endpoint working"}
 
-# Import roadmap module only when needed to avoid startup issues
-def get_roadmap_module():
-    try:
-        from app import roadmap
-        return roadmap
-    except Exception as e:
-        raise HTTPException(status_code=503, detail=f"Backend services not ready: {str(e)}")
+@app.post(path="/api/roadmap/", response_model=RoadmapResponse)
+async def get_roadmap(request: RoadmapRequest, client: Client = Depends(database.get_python_client)):
+    generated_roadmap = roadmap.generate_roadmap(request.query, client)
+    return {"roadmap": generated_roadmap}
 
-@app.post("/roadmap/")
-async def get_roadmap(request: RoadmapRequest):
-    roadmap = get_roadmap_module()
-    
-    # Validate request
-    if not request.query or not request.query.strip():
-        raise HTTPException(status_code=400, detail="Query is required")
-    
-    try:
-        generated_roadmap = roadmap.generate_roadmap(request.query)
-        return {"roadmap": generated_roadmap}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error generating roadmap: {str(e)}")
+@app.get("/api/paper/{paper_id}/summary", response_model=SummaryResponse)
+async def get_summary(paper_id: str, client: Client = Depends(database.get_python_client)):
+    paper = roadmap.get_paper_by_id(paper_id, client)
+    if not paper:
+        raise HTTPException(status_code=404, detail="Paper not found")
 
-@app.get("/paper/{paper_id}/summary")
-async def get_summary(paper_id: str):
-    roadmap = get_roadmap_module()
-    
-    try:
-        paper = roadmap.get_paper_by_id(paper_id)
-        if not paper:
-            raise HTTPException(status_code=404, detail="Paper not found")
+    summary = llm.generate_response(command = "summary", abstract = paper.abstract)
+    return {"paper_id": paper_id, "summary": summary}
 
-        summary = llm.generate_response(command="summary", abstract=paper.abstract)
-        return {"paper_id": paper_id, "summary": summary}
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error generating summary: {str(e)}")
+@app.get("/api/paper/{paper_id}/jargon", response_model=JargonResponse)
+async def get_jargon(paper_id: str, client: Client = Depends(database.get_python_client)):
+    paper = roadmap.get_paper_by_id(paper_id, client)
+    if not paper:
+        raise HTTPException(status_code=404, detail="Paper not found")
 
-@app.get("/paper/{paper_id}/jargon")
-async def get_jargon(paper_id: str):
-    roadmap = get_roadmap_module()
-    
-    try:
-        paper = roadmap.get_paper_by_id(paper_id)
-        if not paper:
-            raise HTTPException(status_code=404, detail="Paper not found")
+    jargon_list = llm.generate_response("jargon", paper.abstract)
+    return {"paper_id": paper_id, "jargon": jargon_list}
 
-        jargon_list = llm.generate_response("jargon", paper.abstract)
-        return {"paper_id": paper_id, "jargon": jargon_list}
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error extracting jargon: {str(e)}")
-
-# Authentication endpoints
 @app.post("/api/register")
-async def register(request: RegisterRequest):
-    try:
-        # Simple mock registration - in a real app, you'd use a database
-        # Hash the password
-        hashed_password = hashlib.sha256(request.password.encode()).hexdigest()
-        
-        # Create a simple token (base64 encoded user data)
-        token_data = f"{request.email}:{request.firstName}:{request.lastName}:{datetime.utcnow().timestamp()}"
-        token = base64.b64encode(token_data.encode()).decode()
-        
-        # Create user object
-        user = {
-            "id": "user_" + hashlib.md5(request.email.encode()).hexdigest()[:8],
-            "firstName": request.firstName,
-            "lastName": request.lastName,
-            "email": request.email,
-            "newsletter": request.newsletter
-        }
-        
-        return {
-            "success": True,
-            "message": "Account created successfully! Welcome to setosa.",
-            "token": token,
-            "user": user
-        }
-    except Exception as e:
-        return {
-            "success": False,
-            "message": f"Registration failed: {str(e)}"
-        }
+async def register(request: RegisterRequest, client: Client = Depends(database.get_python_client)):
+    # Check if user already exists
+    response = client.table('users').select('email').eq('email', request.email).execute()
+    if response.data:
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    # Hash the password
+    hashed_password = hashlib.sha256(request.password.encode()).hexdigest()
+
+    # Create user
+    user_data = {
+        "first_name": request.firstName,
+        "last_name": request.lastName,
+        "email": request.email,
+        "password": hashed_password,
+        "newsletter": request.newsletter,
+    }
+    response = client.table('users').insert(user_data).execute()
+    
+    if not response.data:
+        raise HTTPException(status_code=500, detail="Failed to create user")
+
+    # Generate and send verification email
+    code = generate_verification_code()
+    verification_codes[request.email] = {
+        "code": code,
+        "expires_at": datetime.utcnow() + timedelta(minutes=10)
+    }
+    
+    if not send_verification_email(request.email, code):
+        raise HTTPException(status_code=500, detail="Failed to send verification email")
+
+    return {"message": "Registration successful. Please check your email for a verification code."}
 
 @app.post("/api/login")
-async def login(request: LoginRequest):
-    try:
-        # Simple mock login - in a real app, you'd verify against a database
-        # For demo purposes, accept any email/password combination
-        if not request.email or not request.password:
-            return {
-                "success": False,
-                "message": "Email and password are required"
-            }
-        
-        # Create a simple token (base64 encoded user data)
-        token_data = f"{request.email}:{datetime.utcnow().timestamp()}"
-        token = base64.b64encode(token_data.encode()).decode()
-        
-        # Create user object (mock data)
-        user = {
-            "id": "user_" + hashlib.md5(request.email.encode()).hexdigest()[:8],
-            "firstName": request.email.split('@')[0].title(),
-            "lastName": "User",
-            "email": request.email
-        }
-        
-        return {
-            "success": True,
-            "message": "Login successful",
-            "token": token,
-            "user": user
-        }
-    except Exception as e:
-        return {
-            "success": False,
-            "message": f"Login failed: {str(e)}"
-        }
+async def login(request: LoginRequest, client: Client = Depends(database.get_python_client)):
+    # Find user by email
+    response = client.table('users').select('*').eq('email', request.email).execute()
+    if not response.data:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user = response.data[0]
+    
+    # Verify password
+    hashed_password = hashlib.sha256(request.password.encode()).hexdigest()
+    if user["password"] != hashed_password:
+        raise HTTPException(status_code=401, detail="Incorrect password")
+
+    # Check if verified
+    if not user["is_verified"]:
+        raise HTTPException(status_code=401, detail="Account not verified. Please check your email.")
+
+    return {"message": "Login successful"}
+
+@app.post("/api/verify")
+async def verify(email: str, code: str, client: Client = Depends(database.get_python_client)):
+    if email not in verification_codes:
+        raise HTTPException(status_code=400, detail="Invalid verification request")
+
+    stored_code = verification_codes[email]
+    if stored_code["code"] != code or datetime.utcnow() > stored_code["expires_at"]:
+        raise HTTPException(status_code=400, detail="Invalid or expired verification code")
+
+    # Update user's verification status
+    response = client.table('users').update({"is_verified": True}).eq('email', email).execute()
+    if not response.data:
+        raise HTTPException(status_code=500, detail="Failed to verify user")
+
+    del verification_codes[email]  # Clean up used code
+    return {"message": "Account verified successfully"}
 
 @app.post("/api/resend-verification")
-async def resend_verification(request: ResendVerificationRequest):
-    try:
-        # Generate verification code
-        verification_code = generate_verification_code()
-        
-        # Store the code with timestamp
-        verification_codes[request.email] = {
-            "code": verification_code,
-            "timestamp": datetime.utcnow()
-        }
-        
-        # Send verification email
-        if EMAIL_USER == "your-email@gmail.com" or EMAIL_PASSWORD == "your-app-password":
-            # If email credentials are not configured, return mock response
-            print(f"Mock verification code for {request.email}: {verification_code}")
-            return {
-                "success": True,
-                "message": f"Verification email sent successfully! Mock code: {verification_code}"
-            }
-        else:
-            # Send actual email
-            email_sent = send_verification_email(request.email, verification_code)
-            if email_sent:
-                return {
-                    "success": True,
-                    "message": "Verification email sent successfully! Please check your inbox."
-                }
-            else:
-                return {
-                    "success": False,
-                    "message": "Failed to send verification email. Please try again."
-                }
-    except Exception as e:
-        return {
-            "success": False,
-            "message": f"Failed to send verification email: {str(e)}"
-        }
+async def resend_verification(request: ResendVerificationRequest, client: Client = Depends(database.get_python_client)):
+    # Check if user exists
+    response = client.table('users').select('email').eq('email', request.email).execute()
+    if not response.data:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Generate and send new verification email
+    code = generate_verification_code()
+    verification_codes[request.email] = {
+        "code": code,
+        "expires_at": datetime.utcnow() + timedelta(minutes=10)
+    }
+    
+    if not send_verification_email(request.email, code):
+        raise HTTPException(status_code=500, detail="Failed to send verification email")
+
+    return {"message": "Verification code resent successfully"}

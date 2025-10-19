@@ -1,12 +1,18 @@
 
 import os
+from functools import lru_cache
 
 import dotenv
 import psycopg2
+from google.oauth2.utils import ClientAuthType
 from psycopg2.extras import RealDictCursor
+from supabase import create_client, Client, ClientOptions
 
 from dotenv import load_dotenv
 import os
+
+from functools import lru_cache
+import httpx
 
 load_dotenv()
 
@@ -18,29 +24,31 @@ DB_CONFIG = {
     "port": os.getenv("DB_PORT")
 }
 
+API_CONFIG = {
+    "SUPABASE_URL": os.getenv("SUPABASE_URL"),
+    "SUPABASE_KEY": os.getenv("SUPABASE_KEY")
+}
+
+
 def get_db_connection():
-    try:
-        # Try with IPv4 preference
-        conn = psycopg2.connect(**DB_CONFIG)
-        return conn
-    except Exception as e:
-        print(f"Database connection error: {e}")
-        # Try alternative connection method
-        try:
-            # Force IPv4 by using the IP address directly
-            import socket
-            host = os.getenv("DB_HOST")
-            try:
-                ip = socket.gethostbyname(host)
-                alt_config = DB_CONFIG.copy()
-                alt_config["host"] = ip
-                conn = psycopg2.connect(**alt_config)
-                return conn
-            except socket.gaierror:
-                raise e
-        except Exception as e2:
-            print(f"Alternative connection also failed: {e2}")
-            raise e
+    conn = psycopg2.connect(**DB_CONFIG)
+    return conn
+
+@lru_cache
+def get_python_client():
+    # Create httpx client with longer timeout
+    http_client = httpx.Client(timeout=120.0)  # 2 minutes
+
+    # Create supabase client (no options parameter)
+    supabase: Client = create_client(
+        API_CONFIG['SUPABASE_URL'],
+        API_CONFIG['SUPABASE_KEY']
+    )
+
+    # Set the httpx client on the postgrest session
+    supabase.postgrest.session = http_client
+
+    return supabase
 
 def create_papers_table():
     conn = get_db_connection()

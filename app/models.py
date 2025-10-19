@@ -8,14 +8,12 @@ class RoadmapRequest(BaseModel):
 class Paper(BaseModel):
     paper_id: str
     title: str
-    abstract: str
+    abstract: Optional[str]
     authors: List[str]
     year: Optional[int]
     url: Optional[str]
     fields_of_study: Optional[List[str]]
     citation_count: Optional[int]
-    reference_count: Optional[int]
-    influential_citation_count: Optional[int]
 
 class RoadmapPaper(BaseModel):
     paper: Paper
@@ -30,10 +28,6 @@ class SummaryResponse(BaseModel):
     paper_id: str
     summary: str
 
-class JargonTerm(BaseModel):
-    term: str
-    definition: str
-
 class JargonResponse(BaseModel):
     paper_id: str
-    jargon: List[JargonTerm]
+    jargon: str

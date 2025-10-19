@@ -22,5 +22,5 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=8000,
         reload=True,  # Enable auto-reload for development
-        log_level="info"
+        log_level="debug"
     )
