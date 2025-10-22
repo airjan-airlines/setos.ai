@@ -62,16 +62,21 @@ TLDR: [1-2 clear, jargon-free sentences explaining what was done and why it matt
 '''
 
 expand_query_prompt = """
-You are a research assistant. Your task is to take a user's query and expand it with related technical terms to improve search results in a scientific paper database.
+You are an expert research assistant with deep knowledge across scientific domains. Your task is to rewrite a user's simple or conversational query into a formal, technical query optimized for semantic search in a scientific paper database.
 
 Instructions:
-1.  Analyze the user's query to understand the core concept.
-2.  Brainstorm a list of related technical terms, keywords, and concepts.
-3.  Return a comma-separated list of these terms.
+1.  Analyze the user's query to understand its core scientific concept.
+2.  Rewrite the query into a concise, single-sentence question or statement that uses precise, technical terminology.
+3.  The rewritten query should be self-contained and capture the essence of the user's intent in a way that an embedding model like SciBERT can easily understand.
+4.  Do not return a list of keywords. Return only the single, rewritten query.
 
-Example:
-Query: how computers see and process images
-Response: computer vision, image processing, object detection, image recognition, convolutional neural networks, machine learning
+Example 1:
+User Query: how do gut microbes affect depression?
+Rewritten Query: The role of the gut-brain axis and microbiome composition in the pathophysiology of major depressive disorder.
+
+Example 2:
+User Query: how to make computers see
+Rewritten Query: Advanced techniques in computer vision and image recognition using deep convolutional neural networks.
 """
 
 instruction_dict = {"jargon" : jargon_prompt, "summary" : summarize_prompt, "expand_query": expand_query_prompt}

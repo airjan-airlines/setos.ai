@@ -1,6 +1,114 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSession, useSupabaseClient } from '@supabase/auth-ui-react';
+import { Auth } from '@supabase/auth-ui-react';
+import { ThemeSupa } from '@supabase/auth-ui-shared';
+
+// This is the new PaperItem component
+function PaperItem({ item }) {
+  const [showAbstract, setShowAbstract] = useState(false);
+  const [abstract, setAbstract] = useState('');
+  const [summary, setSummary] = useState('');
+  const [jargon, setJargon] = useState('');
+  const [loading, setLoading] = useState({ abstract: false, summary: false, jargon: false });
+  const [error, setError] = useState('');
+
+  const fetchAbstract = async () => {
+    if (showAbstract) {
+      setShowAbstract(false);
+      return;
+    }
+
+    setShowAbstract(true);
+    if (abstract) return; // Don't fetch if we already have it
+
+    setLoading(prev => ({ ...prev, abstract: true }));
+    setError('');
+    try {
+      const res = await fetch(`/api/paper/${item.paper.paper_id}/abstract`);
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      const data = await res.json();
+      setAbstract(data.abstract || 'No abstract available.');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(prev => ({ ...prev, abstract: false }));
+    }
+  };
+
+  const fetchSummary = async () => {
+    if (summary) {
+      setSummary('');
+      return;
+    }
+    setLoading(prev => ({ ...prev, summary: true }));
+    setError('');
+    try {
+      const res = await fetch(`/api/paper/${item.paper.paper_id}/summary`);
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      const data = await res.json();
+      setSummary(data.summary);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(prev => ({ ...prev, summary: false }));
+    }
+  };
+
+  const fetchJargon = async () => {
+    if (jargon) {
+      setJargon('');
+      return;
+    }
+    setLoading(prev => ({ ...prev, jargon: true }));
+    setError('');
+    try {
+      const res = await fetch(`/api/paper/${item.paper.paper_id}/jargon`);
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      const data = await res.json();
+      setJargon(data.jargon);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(prev => ({ ...prev, jargon: false }));
+    }
+  };
+
+  return (
+    <div className="bg-white/5 border border-white/10 p-5 rounded-2xl">
+      <h3 className="font-semibold text-lg cursor-pointer" onClick={fetchAbstract}>
+        {item.paper.title}
+      </h3>
+      <p className="text-sm text-white/70">{item.paper.authors.join(', ')} - {item.paper.year}</p>
+      
+      {loading.abstract && <p className="mt-2 text-white/70">Loading abstract...</p>}
+      {showAbstract && abstract && <p className="mt-2 text-white/90">{abstract}</p>}
+      
+      <div className="mt-4 flex gap-2 flex-wrap">
+        <button onClick={fetchSummary} className="px-3 py-1 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-sm text-blue-300">
+          {loading.summary ? 'Loading...' : (summary ? 'Hide Summary' : 'AI Summary')}
+        </button>
+        <button onClick={fetchJargon} className="px-3 py-1 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-sm text-purple-300">
+          {loading.jargon ? 'Loading...' : (jargon ? 'Hide Jargon' : 'Explain Jargon')}
+        </button>
+        <a href={item.paper.url} target="_blank" rel="noopener noreferrer" className="px-3 py-1 rounded-lg bg-gray-500/20 hover:bg-gray-500/30 text-sm text-gray-300">
+          Read Paper
+        </a>
+      </div>
+
+      {summary && <div className="mt-4 p-4 rounded-lg bg-white/5"><h4 className="font-bold">Summary:</h4><p>{summary}</p></div>}
+      {jargon && <div className="mt-4 p-4 rounded-lg bg-white/5"><h4 className="font-bold">Jargon:</h4><p>{jargon}</p></div>}
+      {error && <div className="mt-4 text-red-400">{error}</div>}
+    </div>
+  );
+}
+
 
 export default function App() {
+  // We always render the AppContent for the demo version
+  return <AppContent />;
+}
+
+function AppContent() {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
@@ -13,9 +121,11 @@ export default function App() {
     setError("");
     setResults(null);
     try {
+      const headers = { 'Content-Type': 'application/json' };
+      // No auth needed for demo
       const res = await fetch(`/api/roadmap`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: headers,
         body: JSON.stringify({ query }),
       });
       if (!res.ok) {
@@ -37,7 +147,7 @@ export default function App() {
       <header className="max-w-6xl mx-auto flex items-center justify-between px-4 py-4">
         <div className="flex items-center gap-3">
           <div className="w-6 h-6 rounded-full bg-white/90" />
-          <span className="font-semibold tracking-tight">ScholarSage</span>
+          <span className="font-semibold tracking-tight">ScholarSage (Demo)</span>
         </div>
         <nav className="hidden md:flex items-center gap-6 text-sm text-white/80">
           <a className="hover:text-white" href="#">Home</a>
@@ -45,8 +155,14 @@ export default function App() {
           <a className="hover:text-white" href="#">Library</a>
         </nav>
         <div className="flex items-center gap-3">
-          <button className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 text-sm">Log In</button>
-          <button className="px-4 py-2 rounded-xl bg-[#8b5cf6] hover:bg-[#7c3aed] text-sm">Sign Up</button>
+            <>
+              <span className="text-sm text-white/80">dev@example.com</span>
+              <button 
+                  className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 text-sm"
+              >
+                  Sign Out
+              </button>
+            </>
         </div>
       </header>
 
@@ -120,12 +236,7 @@ export default function App() {
         {results && (
           <div className="space-y-4">
             {results.map((item, index) => (
-              <div key={index} className="bg-white/5 border border-white/10 p-5 rounded-2xl">
-                <h3 className="font-semibold text-lg">{item.paper.title}</h3>
-                <p className="text-sm text-white/70">{item.paper.authors.join(', ')} - {item.paper.year}</p>
-                <p className="mt-2 text-white/90">{item.summary}</p>
-                <a href={item.paper.url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline mt-2 inline-block">Read Paper</a>
-              </div>
+              <PaperItem key={index} item={item} />
             ))}
           </div>
         )}
@@ -177,4 +288,3 @@ function Style() {
     `}</style>
   );
 }
-

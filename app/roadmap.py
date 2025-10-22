@@ -217,7 +217,7 @@ def find_similar_papers(query_embedding: np.ndarray, client: Client, candidate_p
 
 def sequence_papers(papers: list[Paper]):
     # Sequence by year (ascending), then by citation count (descending)
-    return sorted(papers, key=lambda p: (p.year or 0, p.citation_count or 0), reverse=False)
+    return sorted(papers, key=lambda p: (p.year or 0, -(p.citation_count or 0)))
 
 def generate_learning_aids(paper: Paper):
     # Placeholder for LLM-based generation of learning aids
@@ -227,10 +227,9 @@ def generate_learning_aids(paper: Paper):
     return summary, vocabulary, quiz
 
 def generate_roadmap(query: str, client: Client):
-    #expanded_query = llm.generate_response("expand_query", query)
-    #combined_query = query + " " + expanded_query
-    #implement LLM query expansion in a bit
-    query_embedding = get_query_embedding(query)
+    improved_query = llm.generate_response("expand_query", query)
+    print(f"Original query: '{query}' | Improved query: '{improved_query}'")
+    query_embedding = get_query_embedding(improved_query)
 
     # 1. Get a large candidate pool from the database
     candidate_papers_with_scores = find_similar_papers(query_embedding, client)

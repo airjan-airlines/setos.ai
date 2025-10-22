@@ -31,3 +31,8 @@ class SummaryResponse(BaseModel):
 class JargonResponse(BaseModel):
     paper_id: str
     jargon: str
+
+
+class AbstractResponse(BaseModel):
+    paper_id: str
+    abstract: Optional[str]

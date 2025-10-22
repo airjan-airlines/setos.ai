@@ -20,17 +20,11 @@ app.use(express.static('.'));
 app.use('/api/roadmap', createProxyMiddleware({
     target: `http://localhost:${BACKEND_PORT}`,
     changeOrigin: true,
-    pathRewrite: {
-        '^/api/roadmap': '/roadmap'
-    }
 }));
 
 app.use('/api/paper', createProxyMiddleware({
     target: `http://localhost:${BACKEND_PORT}`,
     changeOrigin: true,
-    pathRewrite: {
-        '^/api/paper': '/paper'
-    }
 }));
 
 // JWT secret (in production, use environment variable)

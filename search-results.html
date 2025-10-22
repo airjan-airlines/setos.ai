@@ -621,7 +621,14 @@
 
     <script src="api.js"></script>
     <script>
-
+        function formatGeminiText(text) {
+            if (!text) return '';
+            return text
+                .replace(/^\*+$/gm, '<hr>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/^\s*\*\s/gm, '• ')
+                .replace(/\n/g, '<br>');
+        }
 
         // Function to generate results from backend API
         async function generateResults(query) {
@@ -659,41 +666,22 @@
             const papersContainer = document.getElementById('papersContainer');
             papersContainer.innerHTML = '';
 
-            // Get current progress data
-            const urlParams = new URLSearchParams(window.location.search);
-            const searchQuery = urlParams.get('search');
-            const progressData = JSON.parse(localStorage.getItem('topicProgress') || '{}');
-            const topicProgress = searchQuery ? progressData[searchQuery] : null;
-
             results.forEach((result, index) => {
                 const paperWrapper = document.createElement('div');
                 paperWrapper.className = 'paper-wrapper';
+                paperWrapper.id = `paper-wrapper-${index}`;
                 
                 const difficultyClass = result.difficulty.toLowerCase();
-                
-                // Check if this paper has progress
-                const paperProgress = topicProgress && topicProgress.completedPapers[index];
-                const summaryCompleted = paperProgress && paperProgress.summary;
-                const keyTermsCompleted = paperProgress && paperProgress.keyTerms;
-                const quizCompleted = paperProgress && paperProgress.quiz;
-                const readCompleted = paperProgress && paperProgress.read;
                 
                 paperWrapper.innerHTML = `
                     <div class="paper-node"></div>
                     <div class="paper-card">
                         <div class="difficulty-badge difficulty-${difficultyClass}">${result.difficulty}</div>
-                        <h3 class="paper-title">${result.title}</h3>
-                        <p class="paper-summary">
-                            ${result.summary}
-                        </p>
-                                                 <div class="paper-meta">
+                        <h3 class="paper-title" style="cursor: pointer;" onclick="toggleAbstract(${index}, '${result.paperId}')">${result.title}</h3>
+                        <div class="paper-meta">
                              <div class="meta-item">
                                  <div style="font-size: 0.75rem; color: var(--gray); margin-bottom: 0.25rem; font-weight: 600;">PUBLICATION YEAR</div>
                                  <div>${result.datePublished}</div>
-                             </div>
-                             <div class="meta-item">
-                                 <div style="font-size: 0.75rem; color: var(--gray); margin-bottom: 0.25rem; font-weight: 600;">NUMBER OF PAGES</div>
-                                 <div>${result.pageNumber}</div>
                              </div>
                              <div class="meta-item">
                                  <div style="font-size: 0.75rem; color: var(--gray); margin-bottom: 0.25rem; font-weight: 600;">TOPIC</div>
@@ -704,20 +692,14 @@
                                  <div>${result.citations}</div>
                              </div>
                          </div>
+                        <div id="abstract-container-${index}" class="paper-summary" style="display: none;"></div>
                         <div class="paper-actions">
-                            <button class="action-btn ${summaryCompleted ? 'completed' : ''}" onclick="viewSummary(${index})">
-                                ${summaryCompleted ? '✓ ' : ''}view summary
-                            </button>
-                            <button class="action-btn ${keyTermsCompleted ? 'completed' : ''}" onclick="viewKeyTerms(${index})">
-                                ${keyTermsCompleted ? '✓ ' : ''}key terms
-                            </button>
-                            <button class="action-btn ${quizCompleted ? 'completed' : ''}" onclick="takeQuiz(${index})">
-                                ${quizCompleted ? '✓ ' : ''}take quiz
-                            </button>
-                            <button class="action-btn ${readCompleted ? 'completed' : ''}" onclick="readPaper(${index})">
-                                ${readCompleted ? '✓ ' : ''}read paper
-                            </button>
+                            <button class="action-btn" id="summary-btn-${index}" onclick="getSummary(${index}, '${result.paperId}')">AI Summary</button>
+                            <button class="action-btn" id="jargon-btn-${index}" onclick="getJargon(${index}, '${result.paperId}')">Explain Jargon</button>
+                            <a href="${result.url}" target="_blank" class="action-btn">Read Paper</a>
                         </div>
+                        <div id="summary-content-${index}" class="paper-summary" style="display: none; margin-top: 1rem; background-color: rgba(255,255,255,0.05); padding: 1rem; border-radius: 10px;"></div>
+                        <div id="jargon-content-${index}" class="paper-summary" style="display: none; margin-top: 1rem; background-color: rgba(255,255,255,0.05); padding: 1rem; border-radius: 10px;"></div>
                     </div>
                 `;
                 
@@ -725,546 +707,98 @@
             });
         }
 
-        // Action button functions
-        function viewSummary(index) {
-            updateProgress(index, 'summary');
-            alert(`Viewing summary for paper ${index + 1}`);
-        }
-
-        function viewKeyTerms(index) {
-            updateProgress(index, 'keyTerms');
-            alert(`Viewing key terms for paper ${index + 1}`);
-        }
-
-        function takeQuiz(index) {
-            updateProgress(index, 'quiz');
-            alert(`Taking quiz for paper ${index + 1}`);
-        }
-
-        function readPaper(index) {
-            updateProgress(index, 'read');
-            alert(`Reading paper ${index + 1}`);
-        }
-
-        // Function to update progress for a specific paper
-        function updateProgress(paperIndex, action) {
-            const urlParams = new URLSearchParams(window.location.search);
-            const searchQuery = urlParams.get('search');
-            
-            if (!searchQuery) return;
-            
-            // Get current progress data
-            const progressData = JSON.parse(localStorage.getItem('topicProgress') || '{}');
-            
-            // Initialize progress for this topic if it doesn't exist
-            if (!progressData[searchQuery]) {
-                progressData[searchQuery] = {
-                    totalPapers: 0,
-                    completedPapers: {},
-                    lastUpdated: new Date().toISOString(),
-                    lastActivity: new Date().toISOString(),
-                    papersData: []
-                };
+        async function toggleAbstract(index, paperId) {
+            const container = document.getElementById(`abstract-container-${index}`);
+            if (container.style.display === 'block') {
+                container.style.display = 'none';
+                return;
             }
-            
-            // Update the specific paper's progress
-            if (!progressData[searchQuery].completedPapers[paperIndex]) {
-                progressData[searchQuery].completedPapers[paperIndex] = {
-                    summary: false,
-                    keyTerms: false,
-                    quiz: false,
-                    read: false
-                };
+
+            container.style.display = 'block';
+            if (container.innerHTML !== '') { // Already fetched
+                return;
             }
-            
-            // Check if this action was already completed
-            const wasAlreadyCompleted = progressData[searchQuery].completedPapers[paperIndex][action];
-            
-            // Mark the action as completed
-            progressData[searchQuery].completedPapers[paperIndex][action] = true;
-            progressData[searchQuery].lastUpdated = new Date().toISOString();
-            
-            // Only update lastActivity if this is NEW progress (not revisiting)
-            if (!wasAlreadyCompleted) {
-                progressData[searchQuery].lastActivity = new Date().toISOString();
-            }
-            
-            // Save back to localStorage
-            localStorage.setItem('topicProgress', JSON.stringify(progressData));
-            
-            // Update the UI to show progress
-            updateProgressDisplay();
-            
-            // Re-render the results to show updated button states
-            if (searchQuery) {
-                const results = generateResults(searchQuery);
-                renderResults(results);
-            }
-            
-            // Only check and update streak if this was NEW progress
-            if (!wasAlreadyCompleted) {
-                checkAndUpdateStreakFromActivity();
+
+            container.innerHTML = 'Loading abstract...';
+            try {
+                const data = await apiService.getPaperAbstract(paperId);
+                container.innerHTML = data.abstract || 'No abstract available.';
+            } catch (error) {
+                container.innerHTML = 'Error loading abstract.';
+                console.error('Error fetching abstract:', error);
             }
         }
 
-        // Function to check and update streak from activity
-        function checkAndUpdateStreakFromActivity() {
-            const streakData = JSON.parse(localStorage.getItem('streakData') || '{}');
-            const today = new Date().toDateString();
-            const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString();
-            
-            // Check if we've already processed today
-            if (streakData.lastActivityCheck === today) {
+        async function getSummary(index, paperId) {
+            const container = document.getElementById(`summary-content-${index}`);
+            const button = document.getElementById(`summary-btn-${index}`);
+            if (container.style.display === 'block') {
+                container.style.display = 'none';
+                button.textContent = 'AI Summary';
                 return;
             }
             
-            // Check for activity in the last 24 hours
-            const hasActivity = checkForRecentActivity();
-            
-            if (hasActivity) {
-                // Initialize if needed
-                if (!streakData.completedDates) {
-                    streakData.completedDates = [];
-                }
-                
-                // Check if already completed today
-                if (!streakData.completedDates.includes(today)) {
-                    // Add today to completed dates
-                    streakData.completedDates.push(today);
-                    
-                    // Update streak logic
-                    if (streakData.lastCompletedDate === yesterday || streakData.lastCompletedDate === today) {
-                        // Continue streak
-                        streakData.currentStreak++;
-                    } else {
-                        // Start new streak
-                        streakData.currentStreak = 1;
-                    }
-                    
-                    // Update longest streak
-                    if (streakData.currentStreak > streakData.longestStreak) {
-                        streakData.longestStreak = streakData.currentStreak;
-                    }
-                    
-                    streakData.lastCompletedDate = today;
-                    
-                    // Show celebration for new streak
-                    showStreakCelebration(streakData.currentStreak);
-                }
+            container.style.display = 'block';
+            button.textContent = 'Hide Summary';
+
+            if (container.innerHTML !== '') { // Already fetched
+                return;
             }
-            
-            // Mark today as checked
-            streakData.lastActivityCheck = today;
-            
-            // Save to localStorage
-            localStorage.setItem('streakData', JSON.stringify(streakData));
-        }
 
-        function checkForRecentActivity() {
-            const now = new Date();
-            const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-            
-            // Check recent searches
-            const recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
-            const recentActivity = recentSearches.some(search => {
-                const searchTime = new Date(search.timestamp);
-                return searchTime > twentyFourHoursAgo;
-            });
-            
-            // Check topic progress
-            const topicProgress = JSON.parse(localStorage.getItem('topicProgress') || '{}');
-            const progressActivity = Object.values(topicProgress).some(topic => {
-                if (topic.lastActivity) {
-                    const activityTime = new Date(topic.lastActivity);
-                    return activityTime > twentyFourHoursAgo;
-                }
-                return false;
-            });
-            
-            return recentActivity || progressActivity;
-        }
-
-        function showStreakCelebration(streak) {
-            // Show celebration message
-            let message = '';
-            if (streak === 1) {
-                message = '🎉 First day completed! You\'re on your way!';
-            } else if (streak === 7) {
-                message = '🔥 Amazing! You\'ve completed a full week!';
-            } else if (streak === 30) {
-                message = '🌟 Incredible! You\'ve completed a full month!';
-            } else if (streak === 100) {
-                message = '💎 Legendary! 100 days of learning!';
-            } else {
-                message = `🔥 Great job! ${streak} day streak!`;
-            }
-            
-            // Create temporary celebration element
-            const celebration = document.createElement('div');
-            celebration.style.cssText = `
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-                color: white;
-                padding: 2rem;
-                border-radius: 20px;
-                font-size: 1.2rem;
-                font-weight: 600;
-                text-align: center;
-                z-index: 1000;
-                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-                animation: celebrationIn 0.5s ease-out;
-            `;
-            celebration.textContent = message;
-            
-            document.body.appendChild(celebration);
-            
-            // Remove celebration after 3 seconds
-            setTimeout(() => {
-                celebration.style.animation = 'celebrationOut 0.5s ease-in';
-                setTimeout(() => {
-                    document.body.removeChild(celebration);
-                }, 500);
-            }, 3000);
-        }
-
-        // Function to update progress display on the page
-        function updateProgressDisplay() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const searchQuery = urlParams.get('search');
-            
-            if (!searchQuery) return;
-            
-            const progressData = JSON.parse(localStorage.getItem('topicProgress') || '{}');
-            const topicProgress = progressData[searchQuery];
-            
-            if (!topicProgress) return;
-            
-            // Calculate overall progress - only count unique completed actions
-            const totalActions = Object.keys(topicProgress.completedPapers).length * 4; // 4 actions per paper
-            let completedActions = 0;
-            
-            Object.values(topicProgress.completedPapers).forEach(paper => {
-                if (paper.summary) completedActions++;
-                if (paper.keyTerms) completedActions++;
-                if (paper.quiz) completedActions++;
-                if (paper.read) completedActions++;
-            });
-            
-            const progressPercentage = totalActions > 0 ? (completedActions / totalActions) * 100 : 0;
-            
-            // Update the subtitle to show progress
-            const subtitle = document.getElementById('roadmapSubtitle');
-            const papersCount = document.getElementById('roadmapSubtitle').textContent.split(' ')[0];
-            subtitle.textContent = `${papersCount} papers selected • ${Math.round(progressPercentage)}% completed`;
-        }
-
-        // Check authentication and update navigation
-        function checkAuthAndUpdateNav() {
-            const token = localStorage.getItem('token');
-            const user = localStorage.getItem('user');
-            const navLinks = document.querySelector('.nav-links');
-            
-            if (token && user) {
-                // User is logged in - show dashboard and logout
-                const signUpBtn = navLinks.querySelector('.btn-primary');
-                if (signUpBtn) {
-                    signUpBtn.remove();
-                }
-                
-                // Add dashboard link
-                const dashboardLink = document.createElement('a');
-                dashboardLink.href = 'dashboard.html';
-                dashboardLink.className = 'nav-link';
-                dashboardLink.textContent = 'Dashboard';
-                navLinks.appendChild(dashboardLink);
-                
-                                 // Note: Logout button is now only on the dashboard page
+            container.innerHTML = 'Generating summary...';
+            try {
+                const data = await apiService.getPaperSummary(paperId);
+                container.innerHTML = formatGeminiText(data.summary);
+            } catch (error) {
+                container.innerHTML = 'Error generating summary.';
+                console.error('Error fetching summary:', error);
             }
         }
 
-        function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = 'index.html';
-        }
+        async function getJargon(index, paperId) {
+            const container = document.getElementById(`jargon-content-${index}`);
+            const button = document.getElementById(`jargon-btn-${index}`);
 
-        function toggleDropdown(event) {
-            event.preventDefault();
-            const dropdown = document.getElementById('aboutDropdown');
-            dropdown.classList.toggle('active');
-        }
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(event) {
-            const dropdown = document.getElementById('aboutDropdown');
-            if (!dropdown.contains(event.target)) {
-                dropdown.classList.remove('active');
+            if (container.style.display === 'block') {
+                container.style.display = 'none';
+                button.textContent = 'Explain Jargon';
+                return;
             }
-        });
+
+            container.style.display = 'block';
+            button.textContent = 'Hide Jargon';
+
+            if (container.innerHTML !== '') { // Already fetched
+                return;
+            }
+
+            container.innerHTML = 'Extracting jargon...';
+            try {
+                const data = await apiService.getPaperJargon(paperId);
+                container.innerHTML = formatGeminiText(data.jargon);
+            } catch (error) {
+                container.innerHTML = 'Error extracting jargon.';
+                console.error('Error fetching jargon:', error);
+            }
+        }
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
-            checkAuthAndUpdateNav();
-            
             // Get search query from URL parameters
             const urlParams = new URLSearchParams(window.location.search);
             const searchQuery = urlParams.get('search');
-            const source = urlParams.get('source');
-            
-            // Update return button based on source
-            const returnBtn = document.querySelector('.return-btn');
-            if (source === 'dashboard') {
-                returnBtn.href = 'dashboard.html';
-                returnBtn.textContent = '← Return to Dashboard';
-            } else {
-                returnBtn.href = 'index.html';
-                returnBtn.textContent = '← Return to Search';
-            }
             
             if (searchQuery) {
-                // Update page title and subtitle
                 document.getElementById('roadmapTitle').textContent = `Learning Path: "${searchQuery}"`;
-                
-                // Check if we have saved roadmap data for this query
-                const savedRoadmaps = JSON.parse(localStorage.getItem('savedRoadmaps') || '{}');
-                const hasSavedRoadmap = savedRoadmaps[searchQuery];
-                
-                if (hasSavedRoadmap && source === 'dashboard') {
-                    // Use saved roadmap data when coming from dashboard
-                    console.log('Loading saved roadmap for:', searchQuery);
-                    
-                    // Update subtitle with accurate paper count
-                    const subtitleElement = document.getElementById('roadmapSubtitle');
-                    subtitleElement.textContent = `${hasSavedRoadmap.length} papers selected`;
-                    subtitleElement.style.display = 'block';
-                    
-                    renderResults(hasSavedRoadmap);
-                    
-                    // Show refresh button for saved roadmaps
-                    document.getElementById('refreshBtn').style.display = 'inline-block';
-                    
-                    // Check favorite status
-                    checkFavoriteStatus();
-                    
-                    // Show initial progress
-                    updateProgressDisplay();
-                } else {
-                    // Generate new roadmap only if not coming from dashboard or no saved data
-                    console.log('Generating new roadmap for:', searchQuery);
-                    generateResults(searchQuery).then(results => {
-                        renderResults(results);
-                        
-                        // Save roadmap data for future use
-                        savedRoadmaps[searchQuery] = results;
-                        localStorage.setItem('savedRoadmaps', JSON.stringify(savedRoadmaps));
-                        
-                        // Save to recent searches
-                        addRecentSearch(searchQuery, results.length);
-                        
-                        // Check favorite status
-                        checkFavoriteStatus();
-                        
-                        // Show initial progress
-                        updateProgressDisplay();
-                    }).catch(error => {
-                        console.error('Error generating results:', error);
-                        // Show error message
-                        const papersContainer = document.getElementById('papersContainer');
-                        papersContainer.innerHTML = '<div class="loading">No papers found for this query. Please try a different search term.</div>';
-                    });
-                }
-        
-        // Add celebration animations to CSS
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes celebrationIn {
-                from { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
-                to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-            }
-            @keyframes celebrationOut {
-                from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-                to { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
-            }
-        `;
-        document.head.appendChild(style);
+                generateResults(searchQuery).then(results => {
+                    renderResults(results);
+                });
             } else {
-                // No search query provided
                 document.getElementById('roadmapTitle').textContent = 'Learning Path';
                 const papersContainer = document.getElementById('papersContainer');
                 papersContainer.innerHTML = '<div class="loading">Please enter a search query to generate a learning roadmap.</div>';
             }
         });
-
-        // Function to add a new search to recent searches
-        function addRecentSearch(query, papersFound) {
-            const recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
-            
-            // Remove existing search with same query
-            const existingIndex = recentSearches.findIndex(search => search.query.toLowerCase() === query.toLowerCase());
-            if (existingIndex !== -1) {
-                recentSearches.splice(existingIndex, 1);
-            }
-            
-            // Add new search at the beginning
-            const newSearch = {
-                query: query,
-                papersFound: papersFound,
-                timestamp: new Date().toISOString(),
-                timeAgo: 'Just now'
-            };
-            
-            recentSearches.unshift(newSearch);
-            
-            // Keep only the last 10 searches
-            if (recentSearches.length > 10) {
-                recentSearches.splice(10);
-            }
-            
-            localStorage.setItem('recentSearches', JSON.stringify(recentSearches));
-            
-            // Initialize progress data for this topic if it doesn't exist
-            const progressData = JSON.parse(localStorage.getItem('topicProgress') || '{}');
-            if (!progressData[query]) {
-                progressData[query] = {
-                    totalPapers: papersFound,
-                    completedPapers: {},
-                    lastUpdated: new Date().toISOString(),
-                    papersData: []
-                };
-                localStorage.setItem('topicProgress', JSON.stringify(progressData));
-            }
-        }
-
-        // Function to toggle favorite status
-        function toggleFavorite() {
-            // Check if user is logged in
-            const token = localStorage.getItem('token');
-            const user = localStorage.getItem('user');
-            
-            if (!token || !user) {
-                alert('Please create an account to save topics. This feature is only available for registered users.');
-                return;
-            }
-            
-            const urlParams = new URLSearchParams(window.location.search);
-            const searchQuery = urlParams.get('search');
-            
-            if (!searchQuery) return;
-            
-            const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-            const starBtn = document.getElementById('starBtn');
-            
-            const existingIndex = favorites.findIndex(fav => fav.query.toLowerCase() === searchQuery.toLowerCase());
-            
-                         if (existingIndex !== -1) {
-                 // Remove from favorites
-                 favorites.splice(existingIndex, 1);
-                 starBtn.classList.remove('favorited');
-                 starBtn.innerHTML = '<span class="star-icon">☆</span> Save Topic';
-             } else {
-                 // Add to favorites
-                 const newFavorite = {
-                     query: searchQuery,
-                     papersFound: document.getElementById('roadmapSubtitle').textContent.split(' ')[0],
-                     timestamp: new Date().toISOString(),
-                     timeAgo: 'Just now'
-                 };
-                 favorites.unshift(newFavorite);
-                 starBtn.classList.add('favorited');
-                 starBtn.innerHTML = '<span class="star-icon">★</span> Saved';
-                 
-                 // Ensure progress data exists for this topic
-                 const progressData = JSON.parse(localStorage.getItem('topicProgress') || '{}');
-                 if (!progressData[searchQuery]) {
-                     progressData[searchQuery] = {
-                         totalPapers: parseInt(document.getElementById('roadmapSubtitle').textContent.split(' ')[0]),
-                         completedPapers: {},
-                         lastUpdated: new Date().toISOString(),
-                         papersData: []
-                     };
-                     localStorage.setItem('topicProgress', JSON.stringify(progressData));
-                 }
-             }
-            
-            localStorage.setItem('favorites', JSON.stringify(favorites));
-        }
-
-        // Function to check if current search is favorited
-        function checkFavoriteStatus() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const searchQuery = urlParams.get('search');
-            
-            if (!searchQuery) return;
-            
-            const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-            const starBtn = document.getElementById('starBtn');
-            
-            const isFavorited = favorites.some(fav => fav.query.toLowerCase() === searchQuery.toLowerCase());
-            
-                         if (isFavorited) {
-                 starBtn.classList.add('favorited');
-                 starBtn.innerHTML = '<span class="star-icon">★</span> Saved';
-             }
-        }
-
-        // Function to refresh roadmap (regenerate from API)
-        function refreshRoadmap() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const searchQuery = urlParams.get('search');
-            
-            if (!searchQuery) return;
-            
-            // Remove saved roadmap data to force regeneration
-            const savedRoadmaps = JSON.parse(localStorage.getItem('savedRoadmaps') || '{}');
-            delete savedRoadmaps[searchQuery];
-            localStorage.setItem('savedRoadmaps', JSON.stringify(savedRoadmaps));
-            
-            // Hide refresh button during regeneration
-            document.getElementById('refreshBtn').style.display = 'none';
-            
-            // Generate new roadmap
-            generateResults(searchQuery).then(results => {
-                // Update subtitle with accurate paper count
-                const subtitleElement = document.getElementById('roadmapSubtitle');
-                subtitleElement.textContent = `${results.length} papers selected`;
-                subtitleElement.style.display = 'block';
-                
-                renderResults(results);
-                
-                // Save new roadmap data
-                savedRoadmaps[searchQuery] = results;
-                localStorage.setItem('savedRoadmaps', JSON.stringify(savedRoadmaps));
-                
-                // Check favorite status
-                checkFavoriteStatus();
-                
-                // Show initial progress
-                updateProgressDisplay();
-                
-                // Show success message
-                const papersContainer = document.getElementById('papersContainer');
-                const successMessage = document.createElement('div');
-                successMessage.className = 'loading';
-                successMessage.style.color = 'var(--success)';
-                successMessage.textContent = 'Roadmap refreshed successfully!';
-                papersContainer.insertBefore(successMessage, papersContainer.firstChild);
-                
-                // Remove success message after 3 seconds
-                setTimeout(() => {
-                    if (successMessage.parentNode) {
-                        successMessage.remove();
-                    }
-                }, 3000);
-            }).catch(error => {
-                console.error('Error refreshing roadmap:', error);
-                // Show error message
-                const papersContainer = document.getElementById('papersContainer');
-                papersContainer.innerHTML = '<div class="loading">No papers found for this query. Please try a different search term.</div>';
-            });
-        }
     </script>
 </body>
 </html>

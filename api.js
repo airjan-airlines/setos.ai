@@ -47,7 +47,7 @@ class ApiService {
 
     // Generate roadmap from query
     async generateRoadmap(query) {
-        return this.makeRequest('/roadmap/', {
+        return this.makeRequest('/api/roadmap/', {
             method: 'POST',
             body: JSON.stringify({ query }),
         });
@@ -55,17 +55,22 @@ class ApiService {
 
     // Get paper summary
     async getPaperSummary(paperId) {
-        return this.makeRequest(`/paper/${paperId}/summary`);
+        return this.makeRequest(`/api/paper/${paperId}/summary`);
+    }
+
+    // Get paper abstract
+    async getPaperAbstract(paperId) {
+        return this.makeRequest(`/api/paper/${paperId}/abstract`);
     }
 
     // Get paper jargon
     async getPaperJargon(paperId) {
-        return this.makeRequest(`/paper/${paperId}/jargon`);
+        return this.makeRequest(`/api/paper/${paperId}/jargon`);
     }
 
     // Health check
     async healthCheck() {
-        return this.makeRequest('/health');
+        return this.makeRequest('/api/health');
     }
 }
 
