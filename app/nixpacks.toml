@@ -1,6 +1,6 @@
 [phases.setup]
 # Upgrade pip to avoid build issues
-commands = ["python -m pip install --upgrade pip"]
+commands = []
 
 [phases.install]
 # Install only what's in requirements.txt
