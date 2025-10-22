@@ -12,4 +12,4 @@ commands = []
 
 [phases.start]
 # Start the server on Railway's assigned host and port
-commands = [". /opt/venv/bin/activate && python -m uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+commands = ["python -m uvicorn app.main:app --host 0.0.0.0 --port 8000"]
