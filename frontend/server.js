@@ -1,11 +1,11 @@
 const express = require('express');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+// const bcrypt = require('bcryptjs');
+// const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const path = require('path');
 const { createProxyMiddleware } = require('http-proxy-middleware');
-const { initializeDatabase, userOperations } = require('./database');
-const { generateVerificationToken, sendVerificationEmail } = require('./emailService');
+// const { initializeDatabase, userOperations } = require('./database');
+// const { generateVerificationToken, sendVerificationEmail } = require('./emailService');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,13 +28,14 @@ app.use('/api/paper', createProxyMiddleware({
 }));
 
 // JWT secret (in production, use environment variable)
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+// const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 // Routes
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+/*
 // Register endpoint
 app.post('/api/register', async (req, res) => {
     try {
@@ -547,16 +548,17 @@ app.get('/api/users', async (req, res) => {
         });
     }
 });
+*/
 
 // Initialize database and start server
 async function startServer() {
     try {
-        await initializeDatabase();
+        // await initializeDatabase();
         app.listen(PORT, () => {
             console.log(`Server running on http://localhost:${PORT}`);
-            console.log(`Registration API: http://localhost:${PORT}/api/register`);
-            console.log(`Login API: http://localhost:${PORT}/api/login`);
-            console.log('Database: SQLite (users.db)');
+            // console.log(`Registration API: http://localhost:${PORT}/api/register`);
+            // console.log(`Login API: http://localhost:${PORT}/api/login`);
+            // console.log('Database: SQLite (users.db)');
         });
     } catch (error) {
         console.error('Failed to start server:', error);
