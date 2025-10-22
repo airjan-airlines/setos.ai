@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Our Mission - setosa</title>
+    <title>Contact - setosa</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -218,24 +218,19 @@
             box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
         }
 
-        /* About Section */
-        .about-hero {
-            padding: 8rem 2rem 6rem;
+        /* Contact Hero */
+        .contact-hero {
+            padding: 2rem 2rem 1rem;
             text-align: center;
             position: relative;
-            background: linear-gradient(rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.7)), 
-                        url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
         }
 
-        .about-content {
+        .contact-content {
             max-width: 900px;
             margin: 0 auto;
         }
 
-        .about-hero h1 {
+        .contact-hero h1 {
             font-size: 4rem;
             font-weight: 700;
             margin-bottom: 1.5rem;
@@ -244,7 +239,7 @@
             letter-spacing: -0.02em;
         }
 
-        .about-hero .subtitle {
+        .contact-hero .subtitle {
             font-size: 1.25rem;
             color: white;
             margin-bottom: 3rem;
@@ -261,61 +256,21 @@
             }
         }
 
-        /* About Content */
-        .about-section {
+        /* Contact Section */
+        .contact-section {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 4rem 2rem;
-            display: flex;
-            gap: 4rem;
-            align-items: flex-start;
-        }
-
-        .about-content-large {
-            flex: 1;
-            margin-top: 2rem;
-        }
-
-        .about-image {
-            flex: 1;
-            margin-top: 2rem;
-        }
-
-        .about-image img {
-            width: 100%;
-            height: 550px;
-            object-fit: cover;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .about-content-large p {
-            color: var(--gray);
-            line-height: 1.8;
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
-        }
-
-        .about-content-large p:last-child {
-            margin-bottom: 0;
+            padding: 1rem 2rem;
         }
 
         /* Responsive */
         @media (max-width: 768px) {
-            .about-hero h1 {
+            .contact-hero h1 {
                 font-size: 2.5rem;
             }
 
             .nav-links {
                 display: none;
-            }
-
-            .about-section {
-                flex-direction: column;
-                gap: 2rem;
-            }
-
-            .about-image {
-                order: -1;
             }
         }
     </style>
@@ -333,41 +288,47 @@
                     <a href="index.html" class="nav-link">Home</a>
                     <a href="features.html" class="nav-link">Solution</a>
                     <div class="nav-dropdown" id="aboutDropdown">
-                        <a href="#" class="nav-link active" onclick="toggleDropdown(event)">About</a>
+                        <a href="#" class="nav-link" onclick="toggleDropdown(event)">About</a>
                         <div class="dropdown-content">
                             <a href="our-mission.html">Our Mission</a>
                             <a href="our-team.html">Our Team</a>
                         </div>
                     </div>
-                    <a href="register.html" class="btn-primary">Sign Up</a>
+                    <a href="dashboard.html" class="btn-primary">Dashboard</a>
                 </div>
         </div>
     </nav>
 
-    <section class="about-hero">
-        <div class="about-content">
-            <h1>Our Mission</h1>
-            <p class="subtitle">Revolutionizing how researchers discover and evaluate scientific literature</p>
+    <section class="contact-hero">
+        <div class="contact-content">
+            <h1>Get in Touch</h1>
+            <p class="subtitle">Have questions or feedback? We would love to hear from you. Leave us a message or shoot us an email at <a href="mailto:hello@paperrank.com" style="color: var(--primary); text-decoration: none;">hello@paperrank.com</a></p>
         </div>
     </section>
 
-    <section class="about-section">
-        <div class="about-content-large">
-            <p>
-                Most advice on combating misinformation ends with the same response: "read the research." But for anyone outside academia, that's easier said than done. Scientific papers are dense, technical, and often impenetrable to newcomers.
-            </p>
-            <p>
-                We exist to change that.
-            </p>
-            <p>
-                Our mission is to make engaging with research a realistic practice for curious learners. Instead of simplifying science into bite-sized summaries, we help people reach a functional level of fluency: able to read, interpret, and think with the research themselves.
-            </p>
-            <p>
-                By bridging rigor with accessibility, we aim to empower more people to cross the threshold from being passive consumers of secondhand explanations to active participants in the world of knowledge. In a landscape clouded by AI slop and misinformation, we believe this shift is essential.
-            </p>
-        </div>
-        <div class="about-image">
-            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" alt="Research and academic study">
+    <section class="contact-section">
+        <div style="text-align: center; max-width: 800px; margin: 0 auto;">
+            <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 2.5rem; backdrop-filter: blur(10px); margin-bottom: 2rem;">
+                <form id="contactForm" style="text-align: left;">
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: var(--light); font-weight: 500;">Name</label>
+                        <input type="text" name="name" required style="width: 100%; padding: 1rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; color: var(--light); font-size: 1rem; transition: all 0.3s; font-family: inherit;">
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: var(--light); font-weight: 500;">Email</label>
+                        <input type="email" name="email" required style="width: 100%; padding: 1rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; color: var(--light); font-size: 1rem; transition: all 0.3s; font-family: inherit;">
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: var(--light); font-weight: 500;">Message</label>
+                        <textarea name="message" required style="width: 100%; padding: 1rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; color: var(--light); font-size: 1rem; min-height: 120px; resize: vertical; transition: all 0.3s; font-family: inherit;"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary" style="width: 100%;">Send Message</button>
+                </form>
+            </div>
+            
         </div>
     </section>
 
@@ -407,53 +368,69 @@
     </footer>
 
     <script>
-        function toggleDropdown(event) {
-            event.preventDefault();
-            const dropdown = document.getElementById('aboutDropdown');
-            dropdown.classList.toggle('active');
-        }
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(event) {
-            const dropdown = document.getElementById('aboutDropdown');
-            if (!dropdown.contains(event.target)) {
-                dropdown.classList.remove('active');
-            }
-        });
-
-        // Check authentication and update navigation
-        function checkAuthAndUpdateNav() {
-            const token = localStorage.getItem('token');
-            const user = localStorage.getItem('user');
-            const navLinks = document.querySelector('.nav-links');
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
             
-            if (token && user) {
-                // User is logged in - show dashboard and logout
-                const signUpBtn = navLinks.querySelector('.btn-primary');
-                if (signUpBtn) {
-                    signUpBtn.remove();
-                }
-                
-                // Add dashboard link
-                const dashboardLink = document.createElement('a');
-                dashboardLink.href = 'dashboard.html';
-                dashboardLink.className = 'nav-link';
-                dashboardLink.textContent = 'Dashboard';
-                navLinks.appendChild(dashboardLink);
-                
-                                 // Note: Logout button is now only on the dashboard page
+            // Get form data
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            // Simulate form submission
+            console.log('Contact form submitted:', data);
+            
+            // Show success message
+            alert('Thank you for your message! We\'ll get back to you soon.');
+            
+                    // Reset form
+        this.reset();
+    });
+
+    function toggleDropdown(event) {
+        event.preventDefault();
+        const dropdown = document.getElementById('aboutDropdown');
+        dropdown.classList.toggle('active');
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+        const dropdown = document.getElementById('aboutDropdown');
+        if (!dropdown.contains(event.target)) {
+            dropdown.classList.remove('active');
+        }
+    });
+
+    // Check authentication and update navigation
+    function checkAuthAndUpdateNav() {
+        const token = localStorage.getItem('token');
+        const user = localStorage.getItem('user');
+        const navLinks = document.querySelector('.nav-links');
+        
+        if (token && user) {
+            // User is logged in - show dashboard and logout
+            const signUpBtn = navLinks.querySelector('.btn-primary');
+            if (signUpBtn) {
+                signUpBtn.remove();
             }
+            
+            // Add dashboard link
+            const dashboardLink = document.createElement('a');
+            dashboardLink.href = 'dashboard.html';
+            dashboardLink.className = 'nav-link';
+            dashboardLink.textContent = 'Dashboard';
+            navLinks.appendChild(dashboardLink);
+            
+                             // Note: Logout button is now only on the dashboard page
         }
+    }
 
-        function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.reload();
-        }
+    function logout() {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.reload();
+    }
 
-        // Check authentication on page load
-        document.addEventListener('DOMContentLoaded', checkAuthAndUpdateNav);
-    </script>
-
+    // Check authentication on page load
+    document.addEventListener('DOMContentLoaded', checkAuthAndUpdateNav);
+</script>
 </body>
 </html>

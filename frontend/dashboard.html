@@ -1199,11 +1199,6 @@
              </div>
          </div>
 
-         <!-- Logout Section -->
-         <div class="logout-section">
-             <button onclick="logout()" class="btn-danger">Logout</button>
-         </div>
-
      </div>
 
     <!-- Footer -->
@@ -1242,34 +1237,6 @@
     </footer>
 
     <script>
-        // Check if user is logged in
-        function checkAuth() {
-            const token = localStorage.getItem('token');
-            const user = localStorage.getItem('user');
-            
-            if (!token || !user) {
-                window.location.href = 'login.html';
-                return;
-            }
-
-            // Display user information
-            try {
-                const userData = JSON.parse(user);
-                document.getElementById('userName').textContent = `${userData.firstName} ${userData.lastName}`;
-        
-                document.getElementById('userAvatar').textContent = userData.firstName.charAt(0).toUpperCase();
-            } catch (error) {
-                console.error('Error parsing user data:', error);
-                window.location.href = 'login.html';
-            }
-        }
-
-        // Logout function
-        function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = 'index.html';
-        }
 
         function toggleDropdown(event) {
             event.preventDefault();
@@ -1287,7 +1254,6 @@
 
         // Check authentication on page load
         document.addEventListener('DOMContentLoaded', function() {
-            checkAuth();
             loadRecentSearches();
             setupRecentItemClickHandlers();
             loadSavedTopics();

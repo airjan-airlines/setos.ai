@@ -548,7 +548,7 @@
                             <a href="our-team.html">Our Team</a>
                         </div>
                     </div>
-                    <a href="register.html" class="btn-primary">Sign Up</a>
+                    <a href="dashboard.html" class="btn-primary">Dashboard</a>
                 </div>
         </div>
     </nav>
@@ -632,6 +632,12 @@
 
         // Function to generate results from backend API
         async function generateResults(query) {
+            const savedRoadmaps = JSON.parse(localStorage.getItem('savedRoadmaps') || '{}');
+            if (savedRoadmaps[query]) {
+                renderResults(savedRoadmaps[query]);
+                return savedRoadmaps[query];
+            }
+
             try {
                 // Show loading state
                 const papersContainer = document.getElementById('papersContainer');
@@ -651,6 +657,10 @@
                 const subtitleElement = document.getElementById('roadmapSubtitle');
                 subtitleElement.textContent = `${paperCount} papers selected`;
                 subtitleElement.style.display = 'block';
+
+                // Cache the results
+                savedRoadmaps[query] = results;
+                localStorage.setItem('savedRoadmaps', JSON.stringify(savedRoadmaps));
                 
                 return results;
             } catch (error) {
@@ -782,6 +792,54 @@
             }
         }
 
+        function toggleFavorite() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchQuery = urlParams.get('search');
+            const starBtn = document.getElementById('starBtn');
+            const starIcon = starBtn.querySelector('.star-icon');
+
+            let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+            let savedRoadmaps = JSON.parse(localStorage.getItem('savedRoadmaps') || '{}');
+            const existingIndex = favorites.findIndex(fav => fav.query === searchQuery);
+
+            if (existingIndex > -1) {
+                // Remove from favorites
+                favorites.splice(existingIndex, 1);
+                delete savedRoadmaps[searchQuery];
+                starBtn.classList.remove('favorited');
+                starIcon.textContent = '☆';
+            } else {
+                // Add to favorites
+                const newFavorite = {
+                    query: searchQuery,
+                    papersFound: document.getElementById('roadmapSubtitle').textContent.split(' ')[0],
+                    timestamp: new Date().toISOString(),
+                    timeAgo: 'Just now'
+                };
+                favorites.unshift(newFavorite);
+                starBtn.classList.add('favorited');
+                starIcon.textContent = '★';
+            }
+
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+            localStorage.setItem('savedRoadmaps', JSON.stringify(savedRoadmaps));
+        }
+
+        function checkFavoriteStatus() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchQuery = urlParams.get('search');
+            const starBtn = document.getElementById('starBtn');
+            const starIcon = starBtn.querySelector('.star-icon');
+
+            let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+            const isFavorited = favorites.some(fav => fav.query === searchQuery);
+
+            if (isFavorited) {
+                starBtn.classList.add('favorited');
+                starIcon.textContent = '★';
+            }
+        }
+
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
             // Get search query from URL parameters
@@ -798,6 +856,7 @@
                 const papersContainer = document.getElementById('papersContainer');
                 papersContainer.innerHTML = '<div class="loading">Please enter a search query to generate a learning roadmap.</div>';
             }
+            checkFavoriteStatus();
         });
     </script>
 </body>

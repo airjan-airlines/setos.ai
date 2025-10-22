@@ -17,7 +17,7 @@ app = FastAPI()
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5173", "http://127.0.0.1:5173"],  # Frontend URLs
+    allow_origins=["*"],  # Allow all origins
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -40,9 +40,7 @@ async def get_current_user(request: Request, client: Client = Depends(database.g
 
 # Dependency to make authentication optional for development
 async def get_optional_user(request: Request, client: Client = Depends(database.get_python_client)) -> User:
-    if os.getenv("DISABLE_AUTH") == "true":
-        return MockUser()
-    return await get_current_user(request, client)
+    return MockUser()
 
 
 @app.get("/api/")

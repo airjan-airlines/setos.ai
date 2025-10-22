@@ -155,14 +155,6 @@ function AppContent() {
           <a className="hover:text-white" href="#">Library</a>
         </nav>
         <div className="flex items-center gap-3">
-            <>
-              <span className="text-sm text-white/80">dev@example.com</span>
-              <button 
-                  className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 text-sm"
-              >
-                  Sign Out
-              </button>
-            </>
         </div>
       </header>
 

@@ -349,7 +349,7 @@
                             <a href="our-team.html">Our Team</a>
                         </div>
                     </div>
-                    <a href="register.html" class="btn-primary">Sign Up</a>
+                    <a href="dashboard.html" class="btn-primary">Dashboard</a>
                 </div>
         </div>
     </nav>
@@ -447,39 +447,6 @@
                 dropdown.classList.remove('active');
             }
         });
-
-        // Check authentication and update navigation
-        function checkAuthAndUpdateNav() {
-            const token = localStorage.getItem('token');
-            const user = localStorage.getItem('user');
-            const navLinks = document.querySelector('.nav-links');
-            
-            if (token && user) {
-                // User is logged in - show dashboard and logout
-                const signUpBtn = navLinks.querySelector('.btn-primary');
-                if (signUpBtn) {
-                    signUpBtn.remove();
-                }
-                
-                // Add dashboard link
-                const dashboardLink = document.createElement('a');
-                dashboardLink.href = 'dashboard.html';
-                dashboardLink.className = 'nav-link';
-                dashboardLink.textContent = 'Dashboard';
-                navLinks.appendChild(dashboardLink);
-                
-                                 // Note: Logout button is now only on the dashboard page
-            }
-        }
-
-        function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.reload();
-        }
-
-        // Check authentication on page load
-        document.addEventListener('DOMContentLoaded', checkAuthAndUpdateNav);
     </script>
 
 </body>

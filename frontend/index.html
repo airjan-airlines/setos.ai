@@ -969,29 +969,6 @@
                 return;
             }
 
-            // Check for dev mode
-            const urlParams = new URLSearchParams(window.location.search);
-            const isDevMode = urlParams.get('dev') === 'true';
-
-            // Check if user is logged in
-            const token = localStorage.getItem('token');
-            const user = localStorage.getItem('user');
-            
-            if (!token || !user) {
-                // User is not logged in - check search limit, unless in dev mode
-                if (!isDevMode) {
-                    const searchCount = parseInt(localStorage.getItem('searchCount') || '0');
-                    
-                    if (searchCount >= 2) {
-                        alert('You have reached the search limit for unregistered users. Please create an account to continue searching.');
-                        return;
-                    }
-                    
-                    // Increment search count
-                    localStorage.setItem('searchCount', (searchCount + 1).toString());
-                }
-            }
-
             // Save search to recent searches
             const papersFound = Math.floor(Math.random() * 20) + 5; // Simulate random number of papers
             addRecentSearch(query, papersFound);
