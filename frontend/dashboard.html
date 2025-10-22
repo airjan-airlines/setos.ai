@@ -1,0 +1,1776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - setosa</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #22d3ee;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --success: #10b981;
+            --error: #ef4444;
+            --card-bg: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Animated background */
+        .bg-animation {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+            top: -200px;
+            right: -200px;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .bg-animation::after {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--secondary) 0%, transparent 70%);
+            bottom: -300px;
+            left: -300px;
+            animation: float 25s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(50px, -50px) scale(1.1); }
+        }
+
+        /* Navigation */
+        nav {
+            padding: 1.5rem 2rem;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            letter-spacing: -0.01em;
+        }
+
+        .logo-icon {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--gray);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: var(--light);
+        }
+
+        .nav-link.active {
+            color: var(--primary);
+        }
+
+        /* Dropdown styles */
+        .nav-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            min-width: 200px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 0.5rem;
+        }
+
+        .dropdown-content a {
+            color: var(--gray);
+            padding: 0.75rem 1rem;
+            text-decoration: none;
+            display: block;
+            transition: all 0.3s;
+            border-radius: 8px;
+            margin: 0.25rem;
+        }
+
+        .dropdown-content a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+        }
+
+        .nav-dropdown.active .dropdown-content {
+            display: block;
+        }
+
+        .nav-dropdown.active .nav-link {
+            color: var(--primary);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            display: inline-block;
+            letter-spacing: -0.01em;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            display: inline-block;
+            letter-spacing: -0.01em;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            display: inline-block;
+            letter-spacing: -0.01em;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+            box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
+        }
+
+        /* Dashboard */
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .welcome-section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 3rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .welcome-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .welcome-subtitle {
+            color: var(--gray);
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .user-details h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .user-details p {
+            color: var(--gray);
+            font-size: 1rem;
+        }
+
+        /* Streak and Paper of the Day Container */
+        .streak-paper-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Streak Tracker */
+        .streak-tracker {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .streak-tracker::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="fire" patternUnits="userSpaceOnUse" width="20" height="20"><circle cx="10" cy="10" r="2" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23fire)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .streak-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .streak-icon {
+            font-size: 2rem;
+            margin-bottom: 0.25rem;
+            animation: flame 2s ease-in-out infinite;
+        }
+
+        @keyframes flame {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(5deg); }
+        }
+
+        .streak-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 0.25rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .streak-label {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .streak-subtitle {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 0.75rem;
+        }
+
+        .streak-progress {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            height: 4px;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+        }
+
+        .streak-progress-bar {
+            background: white;
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .streak-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .streak-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 0.75rem 1.5rem;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .streak-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .streak-btn.primary {
+            background: rgba(255, 255, 255, 0.9);
+            color: #f59e0b;
+            border-color: white;
+        }
+
+        .streak-btn.primary:hover {
+            background: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Paper of the Day */
+        .paper-of-day {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .paper-of-day::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="paper" patternUnits="userSpaceOnUse" width="15" height="15"><path d="M0 0 L15 0 L15 15 L0 15 Z" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23paper)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .paper-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .paper-icon {
+            font-size: 2rem;
+            margin-bottom: 0.25rem;
+            animation: paperFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes paperFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-5px) rotate(2deg); }
+        }
+
+        .paper-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--light);
+            margin-bottom: 0.5rem;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .paper-subtitle {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-bottom: 1rem;
+        }
+
+        .paper-description {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.4;
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+
+        .paper-actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+        }
+
+        .paper-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 0.75rem 1.5rem;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .paper-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .paper-btn.primary {
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--primary);
+            border-color: white;
+        }
+
+        .paper-btn.primary:hover {
+            background: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.3s;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--light);
+        }
+
+        .card-content {
+            color: var(--gray);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1rem;
+            color: var(--light);
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+                 .logout-section {
+             text-align: center;
+             margin-top: 4rem;
+             padding: 2rem;
+             background: rgba(255, 255, 255, 0.05);
+             backdrop-filter: blur(20px);
+             border: 1px solid rgba(255, 255, 255, 0.1);
+             border-radius: 20px;
+         }
+
+        /* Recents Section */
+        .recents-section {
+            margin-bottom: 3rem;
+        }
+
+        .recents-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--light);
+            margin-bottom: 2rem;
+            letter-spacing: -0.01em;
+        }
+
+        .recents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .recent-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .recent-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .recent-icon {
+            flex-shrink: 0;
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .flashcard-icon {
+            position: relative;
+            width: 32px;
+            height: 24px;
+        }
+
+        .flashcard-outline {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 32px;
+            height: 24px;
+            border: 2px solid #60a5fa;
+            border-radius: 4px;
+            background: transparent;
+        }
+
+        .flashcard-inner {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 16px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 2px;
+        }
+
+        .recent-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .recent-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--light);
+            margin-bottom: 0.5rem;
+            line-height: 1.3;
+            letter-spacing: -0.01em;
+        }
+
+        .recent-details {
+            font-size: 0.85rem;
+            color: var(--gray);
+            line-height: 1.4;
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 3rem 2rem 2rem;
+            margin-top: auto;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-section h3 {
+            color: var(--light);
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .footer-section p {
+            color: var(--gray);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-links a {
+            color: var(--gray);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--light);
+        }
+
+        .footer-bottom {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .footer-bottom p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .feedback-btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .feedback-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+        }
+
+        /* Saved Topics Section */
+        .saved-topics-section {
+            margin-top: 3rem;
+        }
+
+        .saved-topics-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--light);
+        }
+
+        .saved-topics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .saved-topic-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .saved-topic-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .saved-topic-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .saved-topic-content h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--light);
+        }
+
+        .saved-topic-details {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .saved-topic-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1.3rem;
+        }
+
+        .saved-topic-btn {
+            padding: 0.5rem 1rem;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .saved-topic-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .remove-btn {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .remove-btn:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        /* Progress Bar Styles */
+        .progress-container {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-label {
+            font-size: 0.85rem;
+            color: var(--gray);
+            font-weight: 500;
+        }
+
+        .progress-percentage {
+            font-size: 0.85rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.75rem;
+            color: var(--gray);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 1rem;
+            }
+
+            .welcome-section {
+                padding: 2rem;
+            }
+
+            .welcome-title {
+                font-size: 2rem;
+            }
+
+            .streak-paper-container {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .recents-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .saved-topics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .recent-item {
+                padding: 1rem;
+            }
+
+            .recent-icon {
+                width: 40px;
+                height: 40px;
+            }
+
+            .flashcard-icon {
+                width: 28px;
+                height: 20px;
+            }
+
+            .flashcard-outline {
+                width: 28px;
+                height: 20px;
+            }
+
+            .flashcard-inner {
+                width: 16px;
+                height: 12px;
+            }
+
+            .user-info {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">🧭</div>
+                <span>setosa</span>
+            </div>
+                            <div class="nav-links">
+                    <a href="index.html" class="nav-link">Home</a>
+                    <a href="features.html" class="nav-link">Solution</a>
+                    <div class="nav-dropdown" id="aboutDropdown">
+                        <a href="#" class="nav-link" onclick="toggleDropdown(event)">About</a>
+                        <div class="dropdown-content">
+                            <a href="our-mission.html">Our Mission</a>
+                            <a href="our-team.html">Our Team</a>
+                        </div>
+                    </div>
+                    <a href="dashboard.html" class="nav-link active">Dashboard</a>
+                </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard -->
+    <div class="dashboard-container">
+        <div class="welcome-section">
+            <h1 class="welcome-title">Welcome to Your Dashboard</h1>
+            <p class="welcome-subtitle">Track your academic progress and access powerful tools</p>
+            
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <div class="user-details">
+                    <h3 id="userName">User</h3>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Streak Tracker and Paper of the Day Container -->
+        <div class="streak-paper-container">
+            <!-- Streak Tracker -->
+            <div class="streak-tracker">
+                <div class="streak-content">
+                    <div class="streak-icon">🔥</div>
+                    <div class="streak-number" id="streakNumber">0</div>
+                    <div class="streak-label">Day Streak</div>
+                    <div class="streak-subtitle" id="streakSubtitle">Start your learning journey today!</div>
+                    
+                    <div class="streak-progress">
+                        <div class="streak-progress-bar" id="streakProgressBar" style="width: 0%"></div>
+                    </div>
+                    
+                    <div class="streak-actions">
+                        <button class="streak-btn" onclick="viewStreakHistory()">View History</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Paper of the Day -->
+            <div class="paper-of-day">
+                <div class="paper-content">
+                    <div class="paper-icon">📄</div>
+                    <div class="paper-title">Paper of the Day</div>
+                    <div class="paper-subtitle" id="paperDate">Today's Featured Research</div>
+                    
+                    <div class="paper-description" id="paperDescription">
+                        "Attention Is All You Need" - A groundbreaking paper that introduced the Transformer architecture, revolutionizing natural language processing and machine learning.
+                    </div>
+                    
+                    <div class="paper-actions">
+                        <button class="paper-btn primary" onclick="readPaperOfDay()">Read Paper</button>
+                        <button class="paper-btn" onclick="viewPaperSummary()">View Summary</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recents Section -->
+        <div class="recents-section">
+            <h2 class="recents-title">Recents</h2>
+            <div class="recents-grid">
+                <div class="recent-item">
+                    <div class="recent-icon">
+                        <div class="flashcard-icon">
+                            <div class="flashcard-outline"></div>
+                            <div class="flashcard-inner"></div>
+                        </div>
+                    </div>
+                    <div class="recent-content">
+                        <h3 class="recent-title">Machine Learning Fundamentals</h3>
+                        <p class="recent-details">Search query • 12 papers found • 2 hours ago</p>
+                    </div>
+                </div>
+
+                <div class="recent-item">
+                    <div class="recent-icon">
+                        <div class="flashcard-icon">
+                            <div class="flashcard-outline"></div>
+                            <div class="flashcard-inner"></div>
+                        </div>
+                    </div>
+                    <div class="recent-content">
+                        <h3 class="recent-title">Quantum Computing Applications</h3>
+                        <p class="recent-details">Search query • 8 papers found • 4 hours ago</p>
+                    </div>
+                </div>
+
+                <div class="recent-item">
+                    <div class="recent-icon">
+                        <div class="flashcard-icon">
+                            <div class="flashcard-outline"></div>
+                            <div class="flashcard-inner"></div>
+                        </div>
+                    </div>
+                    <div class="recent-content">
+                        <h3 class="recent-title">Neural Network Architecture</h3>
+                        <p class="recent-details">Search query • 15 papers found • 1 day ago</p>
+                    </div>
+                </div>
+
+                <div class="recent-item">
+                    <div class="recent-icon">
+                        <div class="flashcard-icon">
+                            <div class="flashcard-outline"></div>
+                            <div class="flashcard-inner"></div>
+                        </div>
+                    </div>
+                    <div class="recent-content">
+                        <h3 class="recent-title">Data Science Methods</h3>
+                        <p class="recent-details">Search query • 20 papers found • 2 days ago</p>
+                    </div>
+                </div>
+
+                <div class="recent-item">
+                    <div class="recent-icon">
+                        <div class="flashcard-icon">
+                            <div class="flashcard-outline"></div>
+                            <div class="flashcard-inner"></div>
+                        </div>
+                    </div>
+                    <div class="recent-content">
+                        <h3 class="recent-title">Artificial Intelligence Ethics</h3>
+                        <p class="recent-details">Search query • 6 papers found • 3 days ago</p>
+                    </div>
+                </div>
+
+                <div class="recent-item">
+                    <div class="recent-icon">
+                        <div class="flashcard-icon">
+                            <div class="flashcard-outline"></div>
+                            <div class="flashcard-inner"></div>
+                        </div>
+                    </div>
+                    <div class="recent-content">
+                        <h3 class="recent-title">Computer Vision Techniques</h3>
+                        <p class="recent-details">Search query • 10 papers found • 4 days ago</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                 <!-- Saved Topics Section -->
+         <div class="saved-topics-section">
+             <h2 class="saved-topics-title">Saved Topics</h2>
+             <div class="saved-topics-grid" id="savedTopicsGrid">
+                 <!-- Saved topics will be populated by JavaScript -->
+             </div>
+         </div>
+
+     </div>
+
+    <!-- Footer -->
+    <footer style="background: rgba(15, 23, 42, 0.9); border-top: 1px solid rgba(255, 255, 255, 0.1); padding: 3rem 2rem; margin-top: 4rem;">
+        <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: flex-start;">
+            <!-- Left Section -->
+            <div style="display: flex; gap: 4rem;">
+                <!-- Legals -->
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    <h4 style="color: var(--light); font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem;">Legals</h4>
+                    <a href="#" style="color: var(--gray); text-decoration: none; font-size: 0.85rem; transition: color 0.3s;">Cookie Policy</a>
+                    <a href="#" style="color: var(--gray); text-decoration: none; font-size: 0.85rem; transition: color 0.3s;">Privacy Policy</a>
+                    <a href="#" style="color: var(--gray); text-decoration: none; font-size: 0.85rem; transition: color 0.3s;">Terms and Conditions</a>
+                </div>
+
+                <!-- Product -->
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    <h4 style="color: var(--light); font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem;">Product</h4>
+                    <a href="faq.html" style="color: var(--gray); text-decoration: none; font-size: 0.85rem; transition: color 0.3s;">FAQ</a>
+                    <a href="about.html" style="color: var(--gray); text-decoration: none; font-size: 0.85rem; transition: color 0.3s;">About</a>
+                    <a href="contact.html" style="color: var(--gray); text-decoration: none; font-size: 0.85rem; transition: color 0.3s;">Contact</a>
+                </div>
+            </div>
+
+            <!-- Right Section -->
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; color: var(--gray);">
+                        📷
+                    </div>
+                    <span style="color: var(--gray); font-size: 0.9rem;">support@paperrank.com</span>
+                </div>
+                <p style="color: var(--gray); font-size: 0.85rem;">Copyright © 2025 setosa. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+
+        function toggleDropdown(event) {
+            event.preventDefault();
+            const dropdown = document.getElementById('aboutDropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('aboutDropdown');
+            if (!dropdown.contains(event.target)) {
+                dropdown.classList.remove('active');
+            }
+        });
+
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRecentSearches();
+            setupRecentItemClickHandlers();
+            loadSavedTopics();
+            loadStreakData();
+            loadPaperOfDay();
+        });
+
+        // Clean up old saved roadmaps (keep only last 20)
+        function cleanupSavedRoadmaps() {
+            const savedRoadmaps = JSON.parse(localStorage.getItem('savedRoadmaps') || '{}');
+            const roadmapKeys = Object.keys(savedRoadmaps);
+            
+            if (roadmapKeys.length > 20) {
+                // Keep only the 20 most recent roadmaps
+                const recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+                const recentQueries = recentSearches.map(search => search.query);
+                
+                // Remove roadmaps that are not in recent searches
+                roadmapKeys.forEach(key => {
+                    if (!recentQueries.includes(key)) {
+                        delete savedRoadmaps[key];
+                    }
+                });
+                
+                localStorage.setItem('savedRoadmaps', JSON.stringify(savedRoadmaps));
+            }
+        }
+
+        // Load recent searches from localStorage
+        function loadRecentSearches() {
+            // Clean up old roadmaps first
+            cleanupSavedRoadmaps();
+            
+            const recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+            
+            if (recentSearches.length === 0) {
+                // Show default recent items if no searches exist
+                return;
+            }
+
+            const recentsGrid = document.querySelector('.recents-grid');
+            recentsGrid.innerHTML = '';
+
+            recentSearches.slice(0, 6).forEach(search => {
+                const recentItem = document.createElement('div');
+                recentItem.className = 'recent-item';
+                recentItem.setAttribute('data-query', search.query);
+                
+                                 // Get progress data for this topic
+                 const progressData = JSON.parse(localStorage.getItem('topicProgress') || '{}');
+                 const topicProgress = progressData[search.query];
+                 
+                 // Calculate progress - always show progress bar
+                 let completedActions = 0;
+                 let totalActions = 0;
+                 let papersStarted = 0;
+                 
+                 if (topicProgress && Object.keys(topicProgress.completedPapers).length > 0) {
+                     papersStarted = Object.keys(topicProgress.completedPapers).length;
+                     totalActions = papersStarted * 4; // 4 actions per paper
+                     
+                     Object.values(topicProgress.completedPapers).forEach(paper => {
+                         if (paper.summary) completedActions++;
+                         if (paper.keyTerms) completedActions++;
+                         if (paper.quiz) completedActions++;
+                         if (paper.read) completedActions++;
+                     });
+                 } else {
+                     // Default to 6 papers (as per search results) with 4 actions each
+                     totalActions = 6 * 4; // 24 total actions
+                     papersStarted = 0;
+                 }
+                 
+                 const progressPercentage = totalActions > 0 ? (completedActions / totalActions) * 100 : 0;
+                 
+                 const progressHTML = `
+                     <div class="progress-container">
+                         <div class="progress-header">
+                             <span class="progress-label">Learning Progress</span>
+                             <span class="progress-percentage">${Math.round(progressPercentage)}%</span>
+                         </div>
+                         <div class="progress-bar">
+                             <div class="progress-fill" style="width: ${progressPercentage}%"></div>
+                         </div>
+                         <div class="progress-stats">
+                             <span>${completedActions} of ${totalActions} tasks completed</span>
+                             <span>${papersStarted} papers started</span>
+                         </div>
+                     </div>
+                 `;
+                
+                recentItem.innerHTML = `
+                    <div class="recent-icon">
+                        <div class="flashcard-icon">
+                            <div class="flashcard-outline"></div>
+                            <div class="flashcard-inner"></div>
+                        </div>
+                    </div>
+                    <div class="recent-content">
+                        <h3 class="recent-title">${search.query}</h3>
+                        <p class="recent-details">Search query • ${search.papersFound} papers found • ${search.timeAgo}</p>
+                        ${progressHTML}
+                    </div>
+                `;
+                
+                recentsGrid.appendChild(recentItem);
+            });
+        }
+
+        // Setup click handlers for recent items
+        function setupRecentItemClickHandlers() {
+            document.addEventListener('click', function(e) {
+                const recentItem = e.target.closest('.recent-item');
+                if (recentItem) {
+                    const query = recentItem.getAttribute('data-query');
+                    if (query) {
+                        // Redirect to search results page with the query and source parameter
+                        window.location.href = `search-results.html?search=${encodeURIComponent(query)}&source=dashboard`;
+                    }
+                }
+            });
+        }
+
+        // Function to add a new search to recent searches
+        function addRecentSearch(query, papersFound) {
+            const recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+            
+            // Remove existing search with same query
+            const existingIndex = recentSearches.findIndex(search => search.query.toLowerCase() === query.toLowerCase());
+            if (existingIndex !== -1) {
+                recentSearches.splice(existingIndex, 1);
+            }
+            
+            // Add new search at the beginning
+            const newSearch = {
+                query: query,
+                papersFound: papersFound,
+                timestamp: new Date().toISOString(),
+                timeAgo: 'Just now'
+            };
+            
+            recentSearches.unshift(newSearch);
+            
+            // Keep only the last 10 searches
+            if (recentSearches.length > 10) {
+                recentSearches.splice(10);
+            }
+            
+            localStorage.setItem('recentSearches', JSON.stringify(recentSearches));
+            
+            // Check and update streak after new activity
+            const streakData = JSON.parse(localStorage.getItem('streakData') || '{}');
+            checkAndUpdateStreak(streakData);
+            updateStreakDisplay(streakData);
+        }
+
+        // Load saved topics from localStorage
+        function loadSavedTopics() {
+            const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+            const savedTopicsGrid = document.getElementById('savedTopicsGrid');
+            
+            if (favorites.length === 0) {
+                savedTopicsGrid.innerHTML = '<p style="color: var(--gray); text-align: center; grid-column: 1 / -1;">No saved topics yet. Start searching and save topics you find interesting!</p>';
+                return;
+            }
+
+            savedTopicsGrid.innerHTML = '';
+
+            favorites.forEach((favorite, index) => {
+                const savedTopicItem = document.createElement('div');
+                savedTopicItem.className = 'saved-topic-item';
+                savedTopicItem.setAttribute('data-query', favorite.query);
+                
+                // Get progress data for this topic
+                const progressData = JSON.parse(localStorage.getItem('topicProgress') || '{}');
+                const topicProgress = progressData[favorite.query];
+                
+                // Calculate progress - always show progress bar
+                let completedActions = 0;
+                let totalActions = 0;
+                let papersStarted = 0;
+                
+                if (topicProgress && Object.keys(topicProgress.completedPapers).length > 0) {
+                    // Calculate progress - only count unique completed actions
+                    totalActions = Object.keys(topicProgress.completedPapers).length * 4; // 4 actions per paper
+                    papersStarted = Object.keys(topicProgress.completedPapers).length;
+                    
+                    Object.values(topicProgress.completedPapers).forEach(paper => {
+                        if (paper.summary) completedActions++;
+                        if (paper.keyTerms) completedActions++;
+                        if (paper.quiz) completedActions++;
+                        if (paper.read) completedActions++;
+                    });
+                } else {
+                    // Default to 6 papers (as per search results) with 4 actions each
+                    totalActions = 6 * 4; // 24 total actions
+                    papersStarted = 0;
+                }
+                
+                const progressPercentage = totalActions > 0 ? (completedActions / totalActions) * 100 : 0;
+                
+                const progressHTML = `
+                    <div class="progress-container">
+                        <div class="progress-header">
+                            <span class="progress-label">Learning Progress</span>
+                            <span class="progress-percentage">${Math.round(progressPercentage)}%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progressPercentage}%"></div>
+                        </div>
+                        <div class="progress-stats">
+                            <span>${completedActions} of ${totalActions} tasks completed</span>
+                            <span>${papersStarted} papers started</span>
+                        </div>
+                    </div>
+                `;
+                
+                savedTopicItem.innerHTML = `
+                    <div class="saved-topic-icon">⭐</div>
+                    <div class="saved-topic-content">
+                        <h3>${favorite.query}</h3>
+                        <p class="saved-topic-details">${favorite.papersFound} papers found • ${favorite.timeAgo}</p>
+                        ${progressHTML}
+                        <div class="saved-topic-actions">
+                            <button class="saved-topic-btn" onclick="viewSavedTopic('${favorite.query}')">View Results</button>
+                            <button class="saved-topic-btn remove-btn" onclick="removeSavedTopic(${index})">Remove</button>
+                        </div>
+                    </div>
+                `;
+                
+                savedTopicsGrid.appendChild(savedTopicItem);
+            });
+        }
+
+        // Function to view a saved topic
+        function viewSavedTopic(query) {
+            window.location.href = `search-results.html?search=${encodeURIComponent(query)}&source=dashboard`;
+        }
+
+        // Function to remove a saved topic
+        function removeSavedTopic(index) {
+            const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+            favorites.splice(index, 1);
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+            loadSavedTopics(); // Reload the saved topics section
+        }
+
+        // Streak Tracker Functions
+        function loadStreakData() {
+            const streakData = JSON.parse(localStorage.getItem('streakData') || '{}');
+            const today = new Date().toDateString();
+            
+            // Initialize streak data if it doesn't exist
+            if (!streakData.currentStreak) {
+                streakData.currentStreak = 0;
+                streakData.longestStreak = 0;
+                streakData.lastCompletedDate = null;
+                streakData.completedDates = [];
+                streakData.lastActivityCheck = null;
+            }
+            
+            // Check for activity and update streak automatically
+            checkAndUpdateStreak(streakData);
+            
+            // Update streak display
+            updateStreakDisplay(streakData);
+        }
+
+        function checkAndUpdateStreak(streakData) {
+            const today = new Date().toDateString();
+            const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString();
+            
+            // Check if we've already processed today
+            if (streakData.lastActivityCheck === today) {
+                return;
+            }
+            
+            // Check for activity in the last 24 hours
+            const hasActivity = checkForRecentActivity();
+            
+            if (hasActivity) {
+                // Initialize if needed
+                if (!streakData.completedDates) {
+                    streakData.completedDates = [];
+                }
+                
+                // Check if already completed today
+                if (!streakData.completedDates.includes(today)) {
+                    // Add today to completed dates
+                    streakData.completedDates.push(today);
+                    
+                    // Update streak logic
+                    if (streakData.lastCompletedDate === yesterday || streakData.lastCompletedDate === today) {
+                        // Continue streak
+                        streakData.currentStreak++;
+                    } else {
+                        // Start new streak
+                        streakData.currentStreak = 1;
+                    }
+                    
+                    // Update longest streak
+                    if (streakData.currentStreak > streakData.longestStreak) {
+                        streakData.longestStreak = streakData.currentStreak;
+                    }
+                    
+                    streakData.lastCompletedDate = today;
+                    
+                    // Show celebration for new streak
+                    showStreakCelebration(streakData.currentStreak);
+                }
+            }
+            
+            // Mark today as checked
+            streakData.lastActivityCheck = today;
+            
+            // Save to localStorage
+            localStorage.setItem('streakData', JSON.stringify(streakData));
+        }
+
+        function checkForRecentActivity() {
+            const now = new Date();
+            const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+            
+            // Check recent searches
+            const recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+            const recentActivity = recentSearches.some(search => {
+                const searchTime = new Date(search.timestamp);
+                return searchTime > twentyFourHoursAgo;
+            });
+            
+            // Check topic progress - only count NEW activity (not revisiting)
+            const topicProgress = JSON.parse(localStorage.getItem('topicProgress') || '{}');
+            const progressActivity = Object.values(topicProgress).some(topic => {
+                if (topic.lastActivity) {
+                    const activityTime = new Date(topic.lastActivity);
+                    return activityTime > twentyFourHoursAgo;
+                }
+                return false;
+            });
+            
+            return recentActivity || progressActivity;
+        }
+
+        function updateStreakDisplay(streakData) {
+            const streakNumber = document.getElementById('streakNumber');
+            const streakSubtitle = document.getElementById('streakSubtitle');
+            const streakProgressBar = document.getElementById('streakProgressBar');
+            
+            streakNumber.textContent = streakData.currentStreak;
+            
+            const today = new Date().toDateString();
+            const todayCompleted = streakData.completedDates && streakData.completedDates.includes(today);
+            
+            if (todayCompleted) {
+                streakSubtitle.textContent = `Great job! You've been active today.`;
+                streakProgressBar.style.width = '100%';
+            } else {
+                if (streakData.currentStreak === 0) {
+                    streakSubtitle.textContent = 'Start your learning journey today!';
+                } else {
+                    streakSubtitle.textContent = `Keep the momentum going! Don't break your ${streakData.currentStreak}-day streak!`;
+                }
+                streakProgressBar.style.width = '0%';
+            }
+        }
+
+        function showStreakCelebration(streak) {
+            const streakNumber = document.getElementById('streakNumber');
+            
+            // Add celebration animation
+            streakNumber.style.transform = 'scale(1.2)';
+            streakNumber.style.transition = 'transform 0.3s ease';
+            
+            setTimeout(() => {
+                streakNumber.style.transform = 'scale(1)';
+            }, 300);
+            
+            // Show celebration message
+            let message = '';
+            if (streak === 1) {
+                message = '🎉 First day completed! You\'re on your way!';
+            } else if (streak === 7) {
+                message = '🔥 Amazing! You\'ve completed a full week!';
+            } else if (streak === 30) {
+                message = '🌟 Incredible! You\'ve completed a full month!';
+            } else if (streak === 100) {
+                message = '💎 Legendary! 100 days of learning!';
+            } else {
+                message = `🔥 Great job! ${streak} day streak!`;
+            }
+            
+            // Create temporary celebration element
+            const celebration = document.createElement('div');
+            celebration.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+                color: white;
+                padding: 2rem;
+                border-radius: 20px;
+                font-size: 1.2rem;
+                font-weight: 600;
+                text-align: center;
+                z-index: 1000;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+                animation: celebrationIn 0.5s ease-out;
+            `;
+            celebration.textContent = message;
+            
+            document.body.appendChild(celebration);
+            
+            // Remove celebration after 3 seconds
+            setTimeout(() => {
+                celebration.style.animation = 'celebrationOut 0.5s ease-in';
+                setTimeout(() => {
+                    document.body.removeChild(celebration);
+                }, 500);
+            }, 3000);
+        }
+
+        // Make this popup a panel on the screen, rather than an alert
+        function viewStreakHistory() {
+            const streakData = JSON.parse(localStorage.getItem('streakData') || '{}');
+            
+            let message = `📊 Your Streak Statistics:\n\n`;
+            message += `🔥 Current Streak: ${streakData.currentStreak || 0} days\n`;
+            message += `🏆 Longest Streak: ${streakData.longestStreak || 0} days\n`;
+            message += `📅 Total Days Completed: ${streakData.completedDates ? streakData.completedDates.length : 0} days\n\n`;
+            
+            if (streakData.completedDates && streakData.completedDates.length > 0) {
+                message += `📋 Recent Activity:\n`;
+                const recentDates = streakData.completedDates.slice(-7).reverse();
+                recentDates.forEach(date => {
+                    const dateObj = new Date(date);
+                    const formattedDate = dateObj.toLocaleDateString('en-US', { 
+                        weekday: 'short', 
+                        month: 'short', 
+                        day: 'numeric' 
+                    });
+                    message += `✅ ${formattedDate}\n`;
+                });
+            }
+            
+            alert(message);
+        }
+
+        // Gets random paper from the database
+        function loadPaperOfDay() {
+            const papers = [
+                {
+                    title: "Attention Is All You Need",
+                    description: "A groundbreaking paper that introduced the Transformer architecture, revolutionizing natural language processing and machine learning.",
+                    authors: "Vaswani et al.",
+                    year: "2017"
+                },
+                {
+                    title: "BERT: Pre-training of Deep Bidirectional Transformers",
+                    description: "This paper introduces BERT, a new language representation model that achieves state-of-the-art results on a wide range of NLP tasks.",
+                    authors: "Devlin et al.",
+                    year: "2018"
+                },
+                {
+                    title: "Generative Adversarial Networks",
+                    description: "A framework for estimating generative models via an adversarial process, where two neural networks compete against each other.",
+                    authors: "Goodfellow et al.",
+                    year: "2014"
+                },
+                {
+                    title: "Deep Learning",
+                    description: "A comprehensive review of deep learning methods and their applications in various domains of artificial intelligence.",
+                    authors: "LeCun et al.",
+                    year: "2015"
+                },
+                {
+                    title: "ResNet: Deep Residual Learning for Image Recognition",
+                    description: "This paper introduces residual learning framework to ease the training of networks that are substantially deeper than those used previously.",
+                    authors: "He et al.",
+                    year: "2015"
+                }
+            ];
+
+            // Get today's date and use it to select a paper
+            const today = new Date();
+            const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+            const paperIndex = dayOfYear % papers.length;
+            const paper = papers[paperIndex];
+
+            // Update the paper of the day display
+            document.getElementById('paperDate').textContent = `${paper.title} (${paper.year})`;
+            document.getElementById('paperDescription').textContent = `${paper.description} - ${paper.authors}`;
+        }
+
+        function readPaperOfDay() {
+            alert('Opening the full paper in a new tab...');
+            // In a real implementation, this would open the actual paper PDF or link
+        }
+
+        function viewPaperSummary() {
+            alert('Opening paper summary and key insights...');
+            // In a real implementation, this would show a detailed summary
+        }
+
+        // Add celebration animations to CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes celebrationIn {
+                from { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+                to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            }
+            @keyframes celebrationOut {
+                from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                to { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

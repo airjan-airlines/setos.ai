@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results - setosa</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #22d3ee;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --success: #10b981;
+            --error: #ef4444;
+            --card-bg: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Animated background */
+        .bg-animation {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+            top: -200px;
+            right: -200px;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .bg-animation::after {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--secondary) 0%, transparent 70%);
+            bottom: -300px;
+            left: -300px;
+            animation: float 25s ease-in-out infinite reverse;
+        }
+
+        /* Loading styles */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            font-size: 1.2rem;
+            color: var(--gray);
+            background: var(--card-bg);
+            border-radius: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(50px, -50px) scale(1.1); }
+        }
+
+        /* Navigation */
+        nav {
+            padding: 1.5rem 2rem;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            letter-spacing: -0.01em;
+        }
+
+        .logo-icon {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--gray);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: var(--light);
+        }
+
+        .nav-link.active {
+            color: var(--primary);
+        }
+
+        /* Dropdown styles */
+        .nav-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            min-width: 200px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 0.5rem;
+        }
+
+        .dropdown-content a {
+            color: var(--gray);
+            padding: 0.75rem 1rem;
+            text-decoration: none;
+            display: block;
+            transition: all 0.3s;
+            border-radius: 8px;
+            margin: 0.25rem;
+        }
+
+        .dropdown-content a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+        }
+
+        .nav-dropdown.active .dropdown-content {
+            display: block;
+        }
+
+        .nav-dropdown.active .nav-link {
+            color: var(--primary);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            display: inline-block;
+            letter-spacing: -0.01em;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            display: inline-block;
+            letter-spacing: -0.01em;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            display: inline-block;
+            letter-spacing: -0.01em;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+            box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
+        }
+
+        /* Results Section */
+        .results-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .roadmap-header {
+            text-align: left;
+            margin-bottom: 3rem;
+            padding-left: 3rem;
+        }
+
+        .roadmap-title {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.01em;
+        }
+
+        .roadmap-subtitle {
+            color: var(--gray);
+        }
+
+        .roadmap-container {
+            position: relative;
+            padding-left: 3rem;
+        }
+
+        .roadmap-line {
+            position: absolute;
+            left: 1.5rem;
+            top: 2rem;
+            bottom: 2rem;
+            width: 2px;
+            background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%);
+        }
+
+        .paper-wrapper {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .paper-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+            animation: slideInRight 0.5s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .paper-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(10px);
+            box-shadow: 0 10px 40px rgba(99, 102, 241, 0.2);
+        }
+
+        .paper-node {
+            position: absolute;
+            left: -2.15rem;
+            top: 2rem;
+            width: 1.5rem;
+            height: 1.5rem;
+            background: var(--dark);
+            border: 3px solid var(--primary);
+            border-radius: 50%;
+            transition: background 0.3s, box-shadow 0.3s;
+            z-index: 2;
+        }
+
+        .paper-wrapper:hover .paper-node {
+            background: var(--primary);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.6);
+        }
+
+        .difficulty-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .difficulty-beginner {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid #10b981;
+        }
+
+        .difficulty-intermediate {
+            background: rgba(251, 146, 60, 0.2);
+            color: #fb923c;
+            border: 1px solid #fb923c;
+        }
+
+        .difficulty-advanced {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+
+        .paper-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--light);
+            letter-spacing: -0.01em;
+        }
+
+        .paper-summary {
+            color: var(--gray);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .paper-meta {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .paper-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .action-btn {
+            padding: 0.5rem 1rem;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid var(--primary);
+            border-radius: 10px;
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .action-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .action-btn.completed {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .action-btn.completed:hover {
+            background: var(--success);
+            color: white;
+        }
+
+        /* Return to Search and Star Button */
+        .search-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 0 3rem;
+        }
+
+        .return-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .return-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .star-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--gray);
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+        }
+
+        .star-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .star-btn .star-icon {
+            font-size: 1.2rem;
+            transition: all 0.3s;
+        }
+
+        .star-btn.favorited {
+            background: rgba(251, 191, 36, 0.1);
+            color: #fbbf24;
+            border-color: #fbbf24;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+        }
+
+        .star-btn.favorited:hover {
+            background: rgba(251, 191, 36, 0.2);
+            box-shadow: 0 0 30px rgba(251, 191, 36, 0.5);
+        }
+
+        .star-btn.favorited .star-icon {
+            filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.8));
+        }
+
+
+
+
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">🧭</div>
+                <span>setosa</span>
+            </div>
+                            <div class="nav-links">
+                    <a href="index.html" class="nav-link">Home</a>
+                    <a href="features.html" class="nav-link">Solution</a>
+                    <div class="nav-dropdown" id="aboutDropdown">
+                        <a href="#" class="nav-link" onclick="toggleDropdown(event)">About</a>
+                        <div class="dropdown-content">
+                            <a href="our-mission.html">Our Mission</a>
+                            <a href="our-team.html">Our Team</a>
+                        </div>
+                    </div>
+                    <a href="dashboard.html" class="btn-primary">Dashboard</a>
+                </div>
+        </div>
+    </nav>
+
+    <!-- Search Results -->
+    <section class="results-section">
+        <div class="search-actions">
+            <a href="index.html" class="return-btn">
+                ← Return to Search
+            </a>
+            <button class="star-btn" id="starBtn" onclick="toggleFavorite()">
+                <span class="star-icon">☆</span> Save Topic
+            </button>
+        </div>
+        
+        <div class="roadmap-header">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h2 class="roadmap-title" id="roadmapTitle">Your Learning Roadmap</h2>
+                    <p class="roadmap-subtitle" id="roadmapSubtitle" style="display: none;"></p>
+                </div>
+                <button class="btn-secondary" id="refreshBtn" onclick="refreshRoadmap()" style="display: none;">
+                    🔄 Refresh Roadmap
+                </button>
+            </div>
+        </div>
+
+        <div class="roadmap-container">
+            <div class="roadmap-line"></div>
+            <div id="papersContainer">
+                <!-- Papers will be populated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="background: rgba(15, 23, 42, 0.9); border-top: 1px solid rgba(255, 255, 255, 0.1); padding: 3rem 2rem; margin-top: 4rem;">
+        <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: flex-start;">
+            <!-- Left Section -->
+            <div style="display: flex; gap: 4rem;">
+                <!-- Legals -->
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    <h4 style="color: var(--light); font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem;">Legals</h4>
+                    <a href="#" style="color: var(--gray); text-decoration: none; font-size: 0.85rem; transition: color 0.3s;">Cookie Policy</a>
+                    <a href="#" style="color: var(--gray); text-decoration: none; font-size: 0.85rem; transition: color 0.3s;">Privacy Policy</a>
+                    <a href="#" style="color: var(--gray); text-decoration: none; font-size: 0.85rem; transition: color 0.3s;">Terms and Conditions</a>
+                </div>
+
+                <!-- Product -->
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    <h4 style="color: var(--light); font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem;">Product</h4>
+                    <a href="faq.html" style="color: var(--gray); text-decoration: none; font-size: 0.85rem; transition: color 0.3s;">FAQ</a>
+                    <a href="about.html" style="color: var(--gray); text-decoration: none; font-size: 0.85rem; transition: color 0.3s;">About</a>
+                    <a href="contact.html" style="color: var(--gray); text-decoration: none; font-size: 0.85rem; transition: color 0.3s;">Contact</a>
+                </div>
+            </div>
+
+            <!-- Right Section -->
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; color: var(--gray);">
+                        📷
+                    </div>
+                    <span style="color: var(--gray); font-size: 0.9rem;">support@paperrank.com</span>
+                </div>
+                <p style="color: var(--gray); font-size: 0.85rem;">Copyright © 2025 setosa. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="api.js"></script>
+    <script>
+        function formatGeminiText(text) {
+            if (!text) return '';
+            return text
+                .replace(/^\*+$/gm, '<hr>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/^\s*\*\s/gm, '• ')
+                .replace(/\n/g, '<br>');
+        }
+
+        // Function to generate results from backend API
+        async function generateResults(query) {
+            const savedRoadmaps = JSON.parse(localStorage.getItem('savedRoadmaps') || '{}');
+            if (savedRoadmaps[query]) {
+                renderResults(savedRoadmaps[query]);
+                return savedRoadmaps[query];
+            }
+
+            try {
+                // Show loading state
+                const papersContainer = document.getElementById('papersContainer');
+                papersContainer.innerHTML = '<div class="loading">Generating your learning roadmap...</div>';
+                
+                // Call the API to generate roadmap
+                const results = await generateRoadmapFromAPI(query);
+                
+                // Check if we got any results
+                if (!results || results.length === 0) {
+                    papersContainer.innerHTML = '<div class="loading">No papers found for this query. Please try a different search term.</div>';
+                    return [];
+                }
+                
+                // Update paper count based on actual results
+                const paperCount = results.length;
+                const subtitleElement = document.getElementById('roadmapSubtitle');
+                subtitleElement.textContent = `${paperCount} papers selected`;
+                subtitleElement.style.display = 'block';
+
+                // Cache the results
+                savedRoadmaps[query] = results;
+                localStorage.setItem('savedRoadmaps', JSON.stringify(savedRoadmaps));
+                
+                return results;
+            } catch (error) {
+                console.error('Error generating results:', error);
+                const papersContainer = document.getElementById('papersContainer');
+                papersContainer.innerHTML = '<div class="loading">No papers found for this query. Please try a different search term.</div>';
+                return [];
+            }
+        }
+
+        // Function to render results
+        function renderResults(results) {
+            const papersContainer = document.getElementById('papersContainer');
+            papersContainer.innerHTML = '';
+
+            results.forEach((result, index) => {
+                const paperWrapper = document.createElement('div');
+                paperWrapper.className = 'paper-wrapper';
+                paperWrapper.id = `paper-wrapper-${index}`;
+                
+                const difficultyClass = result.difficulty.toLowerCase();
+                
+                paperWrapper.innerHTML = `
+                    <div class="paper-node"></div>
+                    <div class="paper-card">
+                        <div class="difficulty-badge difficulty-${difficultyClass}">${result.difficulty}</div>
+                        <h3 class="paper-title" style="cursor: pointer;" onclick="toggleAbstract(${index}, '${result.paperId}')">${result.title}</h3>
+                        <div class="paper-meta">
+                             <div class="meta-item">
+                                 <div style="font-size: 0.75rem; color: var(--gray); margin-bottom: 0.25rem; font-weight: 600;">PUBLICATION YEAR</div>
+                                 <div>${result.datePublished}</div>
+                             </div>
+                             <div class="meta-item">
+                                 <div style="font-size: 0.75rem; color: var(--gray); margin-bottom: 0.25rem; font-weight: 600;">TOPIC</div>
+                                 <div>${result.topic}</div>
+                             </div>
+                             <div class="meta-item">
+                                 <div style="font-size: 0.75rem; color: var(--gray); margin-bottom: 0.25rem; font-weight: 600;">CITATIONS</div>
+                                 <div>${result.citations}</div>
+                             </div>
+                         </div>
+                        <div id="abstract-container-${index}" class="paper-summary" style="display: none;"></div>
+                        <div class="paper-actions">
+                            <button class="action-btn" id="summary-btn-${index}" onclick="getSummary(${index}, '${result.paperId}')">AI Summary</button>
+                            <button class="action-btn" id="jargon-btn-${index}" onclick="getJargon(${index}, '${result.paperId}')">Explain Jargon</button>
+                            <a href="${result.url}" target="_blank" class="action-btn">Read Paper</a>
+                        </div>
+                        <div id="summary-content-${index}" class="paper-summary" style="display: none; margin-top: 1rem; background-color: rgba(255,255,255,0.05); padding: 1rem; border-radius: 10px;"></div>
+                        <div id="jargon-content-${index}" class="paper-summary" style="display: none; margin-top: 1rem; background-color: rgba(255,255,255,0.05); padding: 1rem; border-radius: 10px;"></div>
+                    </div>
+                `;
+                
+                papersContainer.appendChild(paperWrapper);
+            });
+        }
+
+        async function toggleAbstract(index, paperId) {
+            const container = document.getElementById(`abstract-container-${index}`);
+            if (container.style.display === 'block') {
+                container.style.display = 'none';
+                return;
+            }
+
+            container.style.display = 'block';
+            if (container.innerHTML !== '') { // Already fetched
+                return;
+            }
+
+            container.innerHTML = 'Loading abstract...';
+            try {
+                const data = await apiService.getPaperAbstract(paperId);
+                container.innerHTML = data.abstract || 'No abstract available.';
+            } catch (error) {
+                container.innerHTML = 'Error loading abstract.';
+                console.error('Error fetching abstract:', error);
+            }
+        }
+
+        async function getSummary(index, paperId) {
+            const container = document.getElementById(`summary-content-${index}`);
+            const button = document.getElementById(`summary-btn-${index}`);
+            if (container.style.display === 'block') {
+                container.style.display = 'none';
+                button.textContent = 'AI Summary';
+                return;
+            }
+            
+            container.style.display = 'block';
+            button.textContent = 'Hide Summary';
+
+            if (container.innerHTML !== '') { // Already fetched
+                return;
+            }
+
+            container.innerHTML = 'Generating summary...';
+            try {
+                const data = await apiService.getPaperSummary(paperId);
+                container.innerHTML = formatGeminiText(data.summary);
+            } catch (error) {
+                container.innerHTML = 'Error generating summary.';
+                console.error('Error fetching summary:', error);
+            }
+        }
+
+        async function getJargon(index, paperId) {
+            const container = document.getElementById(`jargon-content-${index}`);
+            const button = document.getElementById(`jargon-btn-${index}`);
+
+            if (container.style.display === 'block') {
+                container.style.display = 'none';
+                button.textContent = 'Explain Jargon';
+                return;
+            }
+
+            container.style.display = 'block';
+            button.textContent = 'Hide Jargon';
+
+            if (container.innerHTML !== '') { // Already fetched
+                return;
+            }
+
+            container.innerHTML = 'Extracting jargon...';
+            try {
+                const data = await apiService.getPaperJargon(paperId);
+                container.innerHTML = formatGeminiText(data.jargon);
+            } catch (error) {
+                container.innerHTML = 'Error extracting jargon.';
+                console.error('Error fetching jargon:', error);
+            }
+        }
+
+        function toggleFavorite() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchQuery = urlParams.get('search');
+            const starBtn = document.getElementById('starBtn');
+            const starIcon = starBtn.querySelector('.star-icon');
+
+            let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+            let savedRoadmaps = JSON.parse(localStorage.getItem('savedRoadmaps') || '{}');
+            const existingIndex = favorites.findIndex(fav => fav.query === searchQuery);
+
+            if (existingIndex > -1) {
+                // Remove from favorites
+                favorites.splice(existingIndex, 1);
+                delete savedRoadmaps[searchQuery];
+                starBtn.classList.remove('favorited');
+                starIcon.textContent = '☆';
+            } else {
+                // Add to favorites
+                const newFavorite = {
+                    query: searchQuery,
+                    papersFound: document.getElementById('roadmapSubtitle').textContent.split(' ')[0],
+                    timestamp: new Date().toISOString(),
+                    timeAgo: 'Just now'
+                };
+                favorites.unshift(newFavorite);
+                starBtn.classList.add('favorited');
+                starIcon.textContent = '★';
+            }
+
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+            localStorage.setItem('savedRoadmaps', JSON.stringify(savedRoadmaps));
+        }
+
+        function checkFavoriteStatus() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchQuery = urlParams.get('search');
+            const starBtn = document.getElementById('starBtn');
+            const starIcon = starBtn.querySelector('.star-icon');
+
+            let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+            const isFavorited = favorites.some(fav => fav.query === searchQuery);
+
+            if (isFavorited) {
+                starBtn.classList.add('favorited');
+                starIcon.textContent = '★';
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get search query from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchQuery = urlParams.get('search');
+            
+            if (searchQuery) {
+                document.getElementById('roadmapTitle').textContent = `Learning Path: "${searchQuery}"`;
+                generateResults(searchQuery).then(results => {
+                    renderResults(results);
+                });
+            } else {
+                document.getElementById('roadmapTitle').textContent = 'Learning Path';
+                const papersContainer = document.getElementById('papersContainer');
+                papersContainer.innerHTML = '<div class="loading">Please enter a search query to generate a learning roadmap.</div>';
+            }
+            checkFavoriteStatus();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>setosa</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #22d3ee;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --success: #10b981;
+            --card-bg: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Animated background */
+        .bg-animation {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+            top: -200px;
+            right: -200px;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .bg-animation::after {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--secondary) 0%, transparent 70%);
+            bottom: -300px;
+            left: -300px;
+            animation: float 25s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(50px, -50px) scale(1.1); }
+        }
+
+        /* Graph Animation */
+        .graph-animation {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -2;
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        .graph-node {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #4b5563;
+            border-radius: 50%;
+            animation: nodeFloat 12s ease-in-out infinite;
+            box-shadow: 0 0 4px rgba(75, 85, 99, 0.5);
+        }
+
+        /* Dense network positioning - rotated 90 degrees (swapped top/left) */
+        .graph-node:nth-child(1) { top: 10%; left: 20%; animation-delay: 0s; }
+        .graph-node:nth-child(2) { top: 25%; left: 35%; animation-delay: 0.5s; }
+        .graph-node:nth-child(3) { top: 40%; left: 15%; animation-delay: 1s; }
+        .graph-node:nth-child(4) { top: 55%; left: 45%; animation-delay: 1.5s; }
+        .graph-node:nth-child(5) { top: 70%; left: 25%; animation-delay: 2s; }
+        .graph-node:nth-child(6) { top: 85%; left: 40%; animation-delay: 2.5s; }
+        .graph-node:nth-child(7) { top: 15%; left: 60%; animation-delay: 3s; }
+        .graph-node:nth-child(8) { top: 30%; left: 75%; animation-delay: 3.5s; }
+        .graph-node:nth-child(9) { top: 45%; left: 65%; animation-delay: 4s; }
+        .graph-node:nth-child(10) { top: 60%; left: 80%; animation-delay: 4.5s; }
+        .graph-node:nth-child(11) { top: 75%; left: 60%; animation-delay: 5s; }
+        .graph-node:nth-child(12) { top: 20%; left: 85%; animation-delay: 5.5s; }
+        .graph-node:nth-child(13) { top: 35%; left: 90%; animation-delay: 6s; }
+        .graph-node:nth-child(14) { top: 50%; left: 85%; animation-delay: 6.5s; }
+        .graph-node:nth-child(15) { top: 65%; left: 90%; animation-delay: 7s; }
+        .graph-node:nth-child(16) { top: 80%; left: 75%; animation-delay: 7.5s; }
+        .graph-node:nth-child(17) { top: 5%; left: 50%; animation-delay: 8s; }
+        .graph-node:nth-child(18) { top: 90%; left: 15%; animation-delay: 8.5s; }
+        .graph-node:nth-child(19) { top: 10%; left: 40%; animation-delay: 9s; }
+        .graph-node:nth-child(20) { top: 95%; left: 55%; animation-delay: 9.5s; }
+        .graph-node:nth-child(21) { top: 15%; left: 5%; animation-delay: 10s; }
+        .graph-node:nth-child(22) { top: 45%; left: 8%; animation-delay: 10.5s; }
+        .graph-node:nth-child(23) { top: 75%; left: 3%; animation-delay: 11s; }
+
+
+
+        @keyframes nodeFloat {
+            0%, 100% { 
+                transform: translate(0, 0) scale(1);
+                opacity: 0.6;
+            }
+            25% { 
+                transform: translate(8px, -6px) scale(1.1);
+                opacity: 0.9;
+            }
+            50% { 
+                transform: translate(-4px, 10px) scale(0.9);
+                opacity: 0.8;
+            }
+            75% { 
+                transform: translate(6px, 4px) scale(1.05);
+                opacity: 1;
+            }
+        }
+
+
+
+        /* Initial animation that plays once on page load */
+        .graph-animation.initial {
+            animation: graphEntrance 3s ease-out forwards;
+        }
+
+        @keyframes graphEntrance {
+            0% {
+                opacity: 0;
+                transform: scale(0.3) rotate(-5deg);
+            }
+            50% {
+                opacity: 0.2;
+                transform: scale(1.05) rotate(2deg);
+            }
+            100% {
+                opacity: 0.15;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        /* Navigation */
+        nav {
+            padding: 1.5rem 2rem;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            letter-spacing: -0.01em;
+        }
+
+        .logo-icon {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--gray);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: var(--light);
+        }
+
+        .nav-link.active {
+            color: var(--primary);
+        }
+
+        /* Dropdown styles */
+        .nav-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            min-width: 200px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 0.5rem;
+        }
+
+        .dropdown-content a {
+            color: var(--gray);
+            padding: 0.75rem 1rem;
+            text-decoration: none;
+            display: block;
+            transition: all 0.3s;
+            border-radius: 8px;
+            margin: 0.25rem;
+        }
+
+        .dropdown-content a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+        }
+
+        .nav-dropdown.active .dropdown-content {
+            display: block;
+        }
+
+        .nav-dropdown.active .nav-link {
+            color: var(--primary);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            display: inline-block;
+            letter-spacing: -0.01em;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            display: inline-block;
+            letter-spacing: -0.01em;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+            box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 6rem 2rem 4rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: white;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            position: relative;
+            display: inline-block;
+        }
+
+
+
+        .hero .subtitle {
+            font-size: 1.25rem;
+            color: white;
+            margin-bottom: 3rem;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Search Section */
+        .search-container {
+            max-width: 700px;
+            margin: 0 auto 4rem;
+        }
+
+        .search-box {
+            position: relative;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 0.5rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+        }
+
+        .search-box:hover,
+        .search-box:focus-within {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--primary);
+            box-shadow: 0 0 40px rgba(99, 102, 241, 0.2);
+        }
+
+        .search-input {
+            background: transparent;
+            border: none;
+            color: var(--light);
+            font-size: 1.1rem;
+            padding: 1rem 1.5rem;
+            width: calc(100% - 140px);
+            outline: none;
+        }
+
+        .search-input::placeholder {
+            color: var(--gray);
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-50%) scale(1.05);
+            box-shadow: 0 5px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .search-suggestions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .suggestion-chip {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: var(--gray);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .suggestion-chip:hover {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: var(--primary);
+            color: var(--light);
+            transform: translateY(-2px);
+        }
+
+        /* Results Section */
+        .results-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .results-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .roadmap-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .roadmap-title {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.01em;
+        }
+
+        .roadmap-subtitle {
+            color: var(--gray);
+        }
+
+        .roadmap-container {
+            position: relative;
+            padding-left: 3rem;
+        }
+
+        .roadmap-line {
+            position: absolute;
+            left: 1.5rem;
+            top: 2rem;
+            bottom: 2rem;
+            width: 2px;
+            background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%);
+        }
+
+        .paper-wrapper {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .paper-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+            animation: slideInRight 0.5s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .paper-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(10px);
+            box-shadow: 0 10px 40px rgba(99, 102, 241, 0.2);
+        }
+
+        .paper-node {
+            position: absolute;
+            left: -2.15rem;
+            top: 2rem;
+            width: 1.5rem;
+            height: 1.5rem;
+            background: var(--dark);
+            border: 3px solid var(--primary);
+            border-radius: 50%;
+            transition: background 0.3s, box-shadow 0.3s;
+            z-index: 2;
+        }
+
+        .paper-wrapper:hover .paper-node {
+            background: var(--primary);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.6);
+        }
+
+        .difficulty-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .difficulty-beginner {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid #10b981;
+        }
+
+        .difficulty-intermediate {
+            background: rgba(251, 146, 60, 0.2);
+            color: #fb923c;
+            border: 1px solid #fb923c;
+        }
+
+        .difficulty-advanced {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+
+        .paper-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--light);
+            letter-spacing: -0.01em;
+        }
+
+        .paper-summary {
+            color: var(--gray);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .paper-meta {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .paper-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .action-btn {
+            padding: 0.5rem 1rem;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid var(--primary);
+            border-radius: 10px;
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .action-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.2);
+        }
+
+        .feature-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--light);
+            letter-spacing: -0.01em;
+        }
+
+        .feature-description {
+            color: var(--gray);
+            line-height: 1.6;
+        }
+
+        /* Loading State */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .search-input {
+                width: calc(100% - 100px);
+                font-size: 1rem;
+            }
+
+            .search-btn {
+                padding: 0.6rem 1rem;
+            }
+
+            .roadmap-container {
+                padding-left: 2rem;
+            }
+
+            .paper-node {
+                left: -1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    <div class="graph-animation" id="graphAnimation">
+        <!-- 20 nodes for a denser network -->
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+    </div>
+
+    <nav>
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">🧭</div>
+                <span>setosa</span>
+            </div>
+                            <div class="nav-links">
+                    <a href="index.html" class="nav-link active">Home</a>
+                    <a href="features.html" class="nav-link">Solution</a>
+                    <div class="nav-dropdown" id="aboutDropdown">
+                        <a href="#" class="nav-link" onclick="toggleDropdown(event)">About</a>
+                        <div class="dropdown-content">
+                            <a href="our-mission.html">Our Mission</a>
+                            <a href="our-team.html">Our Team</a>
+                        </div>
+                    </div>
+                    <a href="register.html" class="btn-primary">Sign Up</a>
+                </div>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1 data-text="setosa">setosa</h1>
+            <p class="subtitle">Transform any question into a personalized learning journey through scientific literature. From beginner to expert, one paper at a time.</p>
+            
+            <div class="search-container">
+                <div class="search-box">
+                    <input type="text" class="search-input" id="searchInput" placeholder="Ask anything: 'Do gut microbes affect depression?'">
+                    <button class="search-btn" onclick="performSearch()">Explore →</button>
+                </div>
+                <div class="search-suggestions">
+                    <div class="suggestion-chip" onclick="setSearch('Climate Change')">Climate Change</div>
+                    <div class="suggestion-chip" onclick="setSearch('Machine Learning')">Machine Learning</div>
+                    <div class="suggestion-chip" onclick="setSearch('Graph Theory')">Graph Theory</div>
+                    <div class="suggestion-chip" onclick="setSearch('Wildfire Spread')">Wildfire Spread</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="loading" id="loadingState">
+        <div class="spinner"></div>
+        <p style="color: var(--gray);">Building your personalized learning roadmap...</p>
+    </div>
+
+    <section class="results-section" id="resultsSection">
+        <div class="roadmap-header">
+            <h2 class="roadmap-title">Your Learning Roadmap</h2>
+            <p class="roadmap-subtitle">5 papers selected • Estimated time: 2-3 hours</p>
+        </div>
+
+        <div class="roadmap-container">
+            <div class="roadmap-line"></div>
+            
+            <div class="paper-wrapper">
+                <div class="paper-node"></div>
+                <div class="paper-card">
+                    <div class="difficulty-badge difficulty-beginner">Beginner</div>
+                    <h3 class="paper-title">Introduction to...</h3>
+                    <p class="paper-summary">
+                        paper summary goes here
+                    </p>
+                    <div class="paper-meta">
+                        <div class="meta-item">date published</div>
+                        <div class="meta-item">page number</div>
+                        <div class="meta-item">paper topic</div>
+                        <div class="meta-item">number of citations</div>
+                    </div>
+                    <div class="paper-actions">
+                        <button class="action-btn">view summary</button>
+                        <button class="action-btn">key terms</button>
+                        <button class="action-btn">take quiz</button>
+                        <button class="action-btn">read paper</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="paper-wrapper">
+                <div class="paper-node"></div>
+                <div class="paper-card">
+                    <div class="difficulty-badge difficulty-beginner">Beginner</div>
+                    <h3 class="paper-title">Other paper title</h3>
+                    <p class="paper-summary">
+                        summary goes here
+                    </p>
+                    <div class="paper-meta">
+                        <div class="meta-item">date published</div>
+                        <div class="meta-item">page number</div>
+                        <div class="meta-item">paper topic</div>
+                        <div class="meta-item">number of citations</div>
+                    </div>
+                    <div class="paper-actions">
+                        <button class="action-btn">view summary</button>
+                        <button class="action-btn">key terms</button>
+                        <button class="action-btn">take quiz</button>
+                        <button class="action-btn">read paper</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="paper-wrapper">
+                <div class="paper-node"></div>
+                <div class="paper-card">
+                    <div class="difficulty-badge difficulty-intermediate">Intermediate</div>
+                    <h3 class="paper-title">other paper title</h3>
+                    <p class="paper-summary">
+                        paper summary goes here
+                    </p>
+                    <div class="paper-meta">
+                      <div class="meta-item">date published</div>
+                      <div class="meta-item">page number</div>
+                      <div class="meta-item">paper topic</div>
+                      <div class="meta-item">number of citations</div>
+                    </div>
+                    <div class="paper-actions">
+                        <button class="action-btn">view summary</button>
+                        <button class="action-btn">key terms</button>
+                        <button class="action-btn">take quiz</button>
+                        <button class="action-btn">read paper</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="paper-wrapper">
+                <div class="paper-node"></div>
+                <div class="paper-card">
+                    <div class="difficulty-badge difficulty-intermediate">Intermediate</div>
+                    <h3 class="paper-title">other paper title</h3>
+                    <p class="paper-summary">
+                        paper summary goes here
+                    </p>
+                    <div class="paper-meta">
+                      <div class="meta-item">date published</div>
+                      <div class="meta-item">page number</div>
+                      <div class="meta-item">paper topic</div>
+                      <div class="meta-item">number of citations</div>
+                    </div>
+                    <div class="paper-actions">
+                        <button class="action-btn">view summary</button>
+                        <button class="action-btn">key terms</button>
+                        <button class="action-btn">take quiz</button>
+                        <button class="action-btn">read paper</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="paper-wrapper">
+                <div class="paper-node"></div>
+                <div class="paper-card">
+                    <div class="difficulty-badge difficulty-advanced">Advanced</div>
+                    <h3 class="paper-title">other paper title</h3>
+                    <p class="paper-summary">
+                        paper summary goes here
+                    </p>
+                    <div class="paper-meta">
+                      <div class="meta-item">date published</div>
+                      <div class="meta-item">page number</div>
+                      <div class="meta-item">paper topic</div>
+                      <div class="meta-item">number of citations</div>
+                    </div>
+                    <div class="paper-actions">
+                        <button class="action-btn">view summary</button>
+                        <button class="action-btn">key terms</button>
+                        <button class="action-btn">take quiz</button>
+                        <button class="action-btn">read paper</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Footer -->
+    <footer style="background: rgba(15, 23, 42, 0.9); border-top: 1px solid rgba(255, 255, 255, 0.1); padding: 3rem 2rem; margin-top: 4rem;">
+        <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: flex-start;">
+            <!-- Left Section -->
+            <div style="display: flex; gap: 4rem;">
+                <!-- Legals -->
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    <h4 style="color: var(--light); font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem;">Legals</h4>
+                    <a href="#" style="color: var(--gray); text-decoration: none; font-size: 0.85rem; transition: color 0.3s;">Cookie Policy</a>
+                    <a href="#" style="color: var(--gray); text-decoration: none; font-size: 0.85rem; transition: color 0.3s;">Privacy Policy</a>
+                    <a href="#" style="color: var(--gray); text-decoration: none; font-size: 0.85rem; transition: color 0.3s;">Terms and Conditions</a>
+                </div>
+
+                <!-- Product -->
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    <h4 style="color: var(--light); font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem;">Product</h4>
+                    <a href="faq.html" style="color: var(--gray); text-decoration: none; font-size: 0.85rem; transition: color 0.3s;">FAQ</a>
+                    <a href="about.html" style="color: var(--gray); text-decoration: none; font-size: 0.85rem; transition: color 0.3s;">About</a>
+                    <a href="contact.html" style="color: var(--gray); text-decoration: none; font-size: 0.85rem; transition: color 0.3s;">Contact</a>
+                </div>
+            </div>
+
+            <!-- Right Section -->
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; color: var(--gray);">
+                        📷
+                    </div>
+                    <span style="color: var(--gray); font-size: 0.9rem;">support@paperrank.com</span>
+                </div>
+                <p style="color: var(--gray); font-size: 0.85rem;">Copyright © 2025 setosa. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function performSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const query = searchInput.value.trim();
+            
+            if (!query) {
+                return;
+            }
+
+            // Save search to recent searches
+            const papersFound = Math.floor(Math.random() * 20) + 5; // Simulate random number of papers
+            addRecentSearch(query, papersFound);
+            
+            // Open search results in the same tab
+            window.location.href = `search-results.html?search=${encodeURIComponent(query)}`;
+        }
+
+        function setSearch(query) {
+            document.getElementById('searchInput').value = query;
+            performSearch();
+        }
+
+        // Allow Enter key to trigger search
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        function toggleDropdown(event) {
+            event.preventDefault();
+            const dropdown = document.getElementById('aboutDropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('aboutDropdown');
+            if (!dropdown.contains(event.target)) {
+                dropdown.classList.remove('active');
+            }
+        });
+
+        // Check authentication and update navigation
+        function checkAuthAndUpdateNav() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            const navLinks = document.querySelector('.nav-links');
+            
+            if (token && user) {
+                // User is logged in - show dashboard and logout
+                const signUpBtn = navLinks.querySelector('.btn-primary');
+                if (signUpBtn) {
+                    signUpBtn.remove();
+                }
+                
+                // Add dashboard link
+                const dashboardLink = document.createElement('a');
+                dashboardLink.href = 'dashboard.html';
+                dashboardLink.className = 'nav-link';
+                dashboardLink.textContent = 'Dashboard';
+                navLinks.appendChild(dashboardLink);
+                
+                                 // Note: Logout button is now only on the dashboard page
+            }
+        }
+
+        // Function to add a new search to recent searches
+        function addRecentSearch(query, papersFound) {
+            const recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+            
+            // Remove existing search with same query
+            const existingIndex = recentSearches.findIndex(search => search.query.toLowerCase() === query.toLowerCase());
+            if (existingIndex !== -1) {
+                recentSearches.splice(existingIndex, 1);
+            }
+            
+            // Add new search at the beginning
+            const newSearch = {
+                query: query,
+                papersFound: papersFound,
+                timestamp: new Date().toISOString(),
+                timeAgo: 'Just now'
+            };
+            
+            recentSearches.unshift(newSearch);
+            
+            // Keep only the last 10 searches
+            if (recentSearches.length > 10) {
+                recentSearches.splice(10);
+            }
+            
+            localStorage.setItem('recentSearches', JSON.stringify(recentSearches));
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.reload();
+        }
+
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthAndUpdateNav();
+            
+            // Trigger graph animation on page load
+            const graphAnimation = document.getElementById('graphAnimation');
+            if (graphAnimation) {
+                graphAnimation.classList.add('initial');
+                
+                // Remove the initial class after animation completes
+                setTimeout(() => {
+                    graphAnimation.classList.remove('initial');
+                }, 3000);
+            }
+        });
+
+    </script>
+</body>
+</html>
