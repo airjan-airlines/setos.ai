@@ -6,4 +6,4 @@ builder = "NIXPACKS"
 # This is an example start command. You may need to change it.
 # For example, if you are using a web server like gunicorn, you might use:
 # startCommand = "gunicorn app.main:app"
-startCommand = "python -m uvicorn app.main:app --port 8000"
+startCommand = "python -m uvicorn app.main:app --host 0.0.0.0 --port 8000"
