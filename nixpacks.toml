@@ -1,0 +1,15 @@
+[phases.setup]
+# Upgrade pip to avoid build issues
+commands = ["python -m pip install --upgrade pip"]
+
+[phases.install]
+# Install only what's in requirements.txt
+commands = ["pip install --no-cache-dir -r requirements.txt"]
+
+[phases.build]
+# No build step needed for FastAPI
+commands = []
+
+[phases.start]
+# Start the server on Railway's assigned host and port
+commands = ["uvicorn app.main:app --host 0.0.0.0 --port 8000"]
