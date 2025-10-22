@@ -1,3 +1,11 @@
+# Dependencies
+node_modules
+.venv
+
+# Build output
+dist
+dist-ssr
+
 # Logs
 logs
 *.log
@@ -6,11 +14,6 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
 
 # Editor directories and files
 .vscode/*
@@ -28,6 +31,17 @@ dist-ssr
 *.sqlite
 *.sqlite3
 
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
 # Configuration files
-config.js
 .env
+.env.*
+!/.env.example
+
+# Railway & Vercel
+.railway/
+.vercel/
