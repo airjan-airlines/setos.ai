@@ -1,14 +1,26 @@
-fastapi~=0.116.1
-uvicorn
-psycopg2-binary~=2.9.10
-sentence-transformers~=5.1.0
-scikit-learn~=1.7.1
-kneed~=0.8.5
-pydantic~=2.11.7
-numpy~=2.2.6
-torch~=2.8.0
-transformers~=4.55.2
-python-dotenv~=1.1.1
-requests~=2.32.4
-wget~=3.2
-google-generativeai~=0.8.3
+# Web framework
+fastapi==0.116.1
+uvicorn[standard]==0.30.6
+
+# Database / API
+supabase==2.5.1
+
+# ML + math stack
+numpy==2.2.6
+scikit-learn==1.7.1
+kneed==0.8.5
+pydantic==2.11.7
+
+# PyTorch (CPU-only, smaller build)
+torch==2.8.0 --index-url https://download.pytorch.org/whl/cpu
+
+# Transformer models
+transformers[sentencepiece]==4.55.2
+
+# Utilities
+python-dotenv==1.1.1
+requests==2.32.4
+wget==3.2
+
+# Google API
+google-generativeai==0.8.3

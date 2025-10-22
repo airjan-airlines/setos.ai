@@ -1,0 +1,9 @@
+# railway.toml
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+# This is an example start command. You may need to change it.
+# For example, if you are using a web server like gunicorn, you might use:
+# startCommand = "gunicorn app.main:app"
+startCommand = "python -m uvicorn app.main:app --reload --port 8000"
