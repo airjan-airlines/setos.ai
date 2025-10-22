@@ -62,58 +62,6 @@ def find_similar_papers(query_embedding: np.ndarray, client: Client, candidate_p
         )
         score = paper_dict['similarity']
         all_papers_with_scores.append((paper, score))
-    '''
-    # Step 2: Batch fetch abstracts for papers with PMIDs
-    pmid_papers = [(p, s) for p, s in papers_needing_abstracts if p.paper_id and p.paper_id.startswith('PMID:')]
-    if pmid_papers:
-        pmids = [p.paper_id for p, s in pmid_papers]
-        works_data = open_alex.get_works_batch(pmids, search_type='pmid')
-
-        abstracts_by_pmid = {
-            work['ids']['pmid'].split('/')[-1]: open_alex.reconstruct_abstract(work.get('abstract_inverted_index'))
-            for work in works_data if work.get('abstract_inverted_index') and work.get('ids', {}).get('pmid')
-        }
-
-        remaining_after_pmid = []
-        for paper, score in pmid_papers:
-            pmid_val = paper.paper_id.replace("PMID:", "")
-            abstract = abstracts_by_pmid.get(pmid_val)
-            if abstract:
-                paper.abstract = abstract
-                all_papers_with_scores.append((paper, score))
-            else:
-                remaining_after_pmid.append((paper, score))
-
-        papers_needing_abstracts = remaining_after_pmid + [(p, s) for p, s in papers_needing_abstracts if
-                                                           not (p.paper_id and p.paper_id.startswith('PMID:'))]
-
-    # Step 3: Batch fetch for the rest by title
-    if papers_needing_abstracts:
-        titles = [p.title for p, s in papers_needing_abstracts if p.title]
-        works_data = open_alex.get_works_batch(titles, search_type='title.search')
-
-        abstracts_by_title = {
-            work['title']: open_alex.reconstruct_abstract(work.get('abstract_inverted_index'))
-            for work in works_data if work.get('abstract_inverted_index') and work.get('title')
-        }
-
-        remaining_after_title = []
-        for paper, score in papers_needing_abstracts:
-            abstract = abstracts_by_title.get(paper.title)
-            if abstract:
-                paper.abstract = abstract
-                all_papers_with_scores.append((paper, score))
-            else:
-                remaining_after_title.append((paper, score))
-
-        papers_needing_abstracts = remaining_after_title
-
-    # Step 4: Fallback to individual search for any remaining papers
-    if papers_needing_abstracts:
-        for paper, score in papers_needing_abstracts:
-            paper.abstract = get_paper_abstract(paper_id=paper.paper_id, title=paper.title)
-            all_papers_with_scores.append((paper, score))
-    '''
 
     # Final sort and return
     all_papers_with_scores.sort(key=lambda x: x[1], reverse=True)
@@ -217,7 +165,7 @@ def find_similar_papers(query_embedding: np.ndarray, client: Client, candidate_p
 
 def sequence_papers(papers: list[Paper]):
     # Sequence by year (ascending), then by citation count (descending)
-    return sorted(papers, key=lambda p: (p.year or 0, -(p.citation_count or 0)))
+    return sorted(papers, key=lambda p: (p.year or 0, p.citation_count or 0), reverse=False)
 
 def generate_learning_aids(paper: Paper):
     # Placeholder for LLM-based generation of learning aids
@@ -227,9 +175,10 @@ def generate_learning_aids(paper: Paper):
     return summary, vocabulary, quiz
 
 def generate_roadmap(query: str, client: Client):
-    improved_query = llm.generate_response("expand_query", query)
-    print(f"Original query: '{query}' | Improved query: '{improved_query}'")
-    query_embedding = get_query_embedding(improved_query)
+    #expanded_query = llm.generate_response("expand_query", query)
+    #combined_query = query + " " + expanded_query
+    #implement LLM query expansion in a bit
+    query_embedding = get_query_embedding(query)
 
     # 1. Get a large candidate pool from the database
     candidate_papers_with_scores = find_similar_papers(query_embedding, client)
