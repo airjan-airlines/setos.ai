@@ -1,4 +1,4 @@
-# Seratosa
+# Setos
 
 A web application that generates personalized learning roadmaps from research papers using AI-powered semantic search and natural language processing.
 
